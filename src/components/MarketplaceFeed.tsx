@@ -239,7 +239,12 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
                                     e.preventDefault();
                                     alert("You must be signed in to message sellers.");
                                 } else {
-                                    navigate('/inbox', { state: { newContact: item.sellerEmail } });
+                                    navigate('/inbox', {
+                                        state: {
+                                            newContact: item.sellerEmail,
+                                            draftMessage: `Hey! I'm interested in your listing: "${item.title}" 👀 Is it still available?`
+                                        }
+                                    });
                                 }
                             }}
                             className="btn btn-primary"

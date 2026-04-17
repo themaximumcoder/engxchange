@@ -18,7 +18,9 @@ export function MessagesInbox({
     useEffect(() => {
         if (location.state?.newContact) {
             setSelectedContact(location.state.newContact);
-            // Replace the URL state locally to avoid locking user upon refresh
+            if (location.state?.draftMessage) {
+                setDraft(location.state.draftMessage);
+            }
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);

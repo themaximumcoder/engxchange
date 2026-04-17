@@ -253,6 +253,10 @@ function MainApp() {
     ));
   };
 
+  const handleDeleteListing = (id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  };
+
   const handleAddListing = async (newItemData: Omit<MarketplaceItem, 'id' | 'createdAt'>) => {
     const dbPayload = mapItemToDB(newItemData);
     const { data, error } = await supabase.from('items').insert([dbPayload]).select();
@@ -412,7 +416,7 @@ function MainApp() {
           } />
           <Route path="/dashboard" element={
             <RequireAuth>
-              <Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} />
+              <Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} />
             </RequireAuth>
           } />
           <Route path="/inbox" element={

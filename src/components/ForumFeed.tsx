@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import type { ForumPost, Comment } from '../types';
 import { CommentSection } from './CommentSection';
+import { STLViewer } from './STLViewer';
 
-export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, currentUserEmail, onReport }: { posts: ForumPost[], projects?: any[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void }) {
+export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, onFriendRequest, currentUserEmail, onReport }: { posts: ForumPost[], projects?: any[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, onFriendRequest: (email: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void }) {
     const [friends, setFriends] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'questions' | 'projects'>('questions');
 
     const toggleFriend = (email: string) => {
+        if (friends.has(email)) return;
+        onFriendRequest(email);
         setFriends(prev => {
             const next = new Set(prev);
-            if (next.has(email)) next.delete(email);
-            else next.add(email);
+            next.add(email);
             return next;
         });
     }
@@ -87,12 +89,12 @@ export function ForumFeed({ posts, projects = [], comments, userVotes, onCreateP
                                         )}
 
                                         {post.stlFileUrl && (
-                                            <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <div style={{ fontSize: '2rem' }}>🧊</div>
-                                                <div style={{ width: '100%' }}>
-                                                    <strong style={{ color: '#3730a3' }}>3D Model Attached</strong>
-                                                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>{post.stlFileName}</p>
+                                            <div style={{ marginTop: '1rem' }}>
+                                                <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <span style={{ fontSize: '1.2rem' }}>🧊</span>
+                                                    <strong style={{ color: '#3730a3' }}>Interactive 3D Model: {post.stlFileName}</strong>
                                                 </div>
+                                                <STLViewer url={post.stlFileUrl} />
                                             </div>
                                         )}
 

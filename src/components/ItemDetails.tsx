@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { MarketplaceItem } from '../types';
+import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 
 export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], isLoggedIn: boolean }) {
@@ -74,11 +75,24 @@ export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], i
                     </div>
 
                     {item.meetupLat && item.meetupLng && (
-                        <div className="info-map-section">
-                            <h3>📍 Meet-up Location</h3>
-                            <div className="map-placeholder">
-                                <p>Map markers will appear here after API integration.</p>
-                                <small>Coordinates: {item.meetupLat}, {item.meetupLng}</small>
+                        <div className="info-map-section" style={{ marginTop: '2rem' }}>
+                            <h3 style={{ marginBottom: '1rem' }}>📍 Exact Meet-up Location</h3>
+                            <LocationPicker
+                                initialLat={item.meetupLat}
+                                initialLng={item.meetupLng}
+                                onLocationChange={() => { }}
+                                readOnly={true}
+                            />
+                            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${item.meetupLat},${item.meetupLng}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="btn btn-outline"
+                                    style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+                                >
+                                    Open in Google Maps
+                                </a>
                             </div>
                         </div>
                     )}

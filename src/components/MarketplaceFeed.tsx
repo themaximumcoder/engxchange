@@ -8,6 +8,7 @@ interface MarketplaceFeedProps {
     isStudentVerified: boolean;
     isLoggedIn?: boolean;
     onReport?: (id: string, type: string, reason: string) => void;
+    onLikeItem: (id: string) => void;
 }
 
 const NEWS_SLIDES = [
@@ -45,9 +46,10 @@ function HeroCarousel() {
     );
 }
 
-export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport }: MarketplaceFeedProps) {
+export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
     const [filterSociety, setFilterSociety] = useState('all');
+    const [recruitSortOption, setRecruitSortOption] = useState('newest');
 
     // 1. Partition Data
     const hotItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
@@ -68,6 +70,13 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
         return sorted;
     };
 
+    const sortRecruitItems = (arr: MarketplaceItem[]) => {
+        const sorted = [...arr];
+        if (recruitSortOption === 'a-z') sorted.sort((a, b) => a.title.localeCompare(b.title));
+        else sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return sorted;
+    };
+
     const displayItems = sortItems(standardItems);
 
     return (
@@ -83,7 +92,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                     <div className="slider-container">
                         {hotItems.map((item) => (
                             <div key={item.id} className="slider-item">
-                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
                             </div>
                         ))}
                     </div>
@@ -129,7 +138,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                 ) : (
                     <div className="items-grid">
                         {displayItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
                         ))}
                     </div>
                 )}
@@ -137,13 +146,28 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
 
             {/* SECTION 3: LATEST ROLES */}
             {recruitingItems.length > 0 && (
-                <div className="feed-section" style={{ marginTop: '4rem' }}>
-                    <div className="feed-header">
-                        <h2>Society Recruitment & Roles 👥</h2>
+                <div className="feed-section" style={{ marginTop: '5rem', borderTop: '1px solid #e5e7eb', paddingTop: '4rem' }}>
+                    <div className="feed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                        <div>
+                            <h2 style={{ color: '#4f46e5', marginBottom: '0.25rem' }}>Society Recruitment & Roles 👥</h2>
+                            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Find your next engineering venture or leadership position.</p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Sort Roles:</span>
+                            <select
+                                value={recruitSortOption}
+                                onChange={e => setRecruitSortOption(e.target.value)}
+                                style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem', cursor: 'pointer', background: '#f9fafb' }}
+                            >
+                                <option value="newest">Latest Postings</option>
+                                <option value="a-z">Role Name (A-Z)</option>
+                            </select>
+                        </div>
                     </div>
+
                     <div className="items-grid">
-                        {recruitingItems.slice(0, 4).map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                        {sortRecruitItems(recruitingItems).map((item) => (
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
                         ))}
                     </div>
                 </div>
@@ -170,7 +194,7 @@ function getTimeAgo(dateString: string): string {
     }
 }
 
-function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void }) {
+function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void }) {
     const navigate = useNavigate();
     const YEAR_COLORS: Record<string, string> = {
         'Year 1': '#9ca3af',
@@ -212,6 +236,13 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
                 <div className="item-image-container">
                     {item.isSold && <div className="sold-overlay">SOLD</div>}
                     <img src={item.imageUrl} alt={item.title} className="item-image" />
+                    <button
+                        className="like-heart-button"
+                        onClick={(e) => { e.stopPropagation(); onLikeItem(item.id); }}
+                        title="I'm interested!"
+                    >
+                        ❤️
+                    </button>
                 </div>
             )}
             {!item.imageUrl && item.isSold && (

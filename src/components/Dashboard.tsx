@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { MarketplaceItem } from '../types';
 import { ListingForm } from './ListingForm';
+import { Package, Users, Star, Edit3, Trash2 } from 'lucide-react';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -14,11 +15,16 @@ interface DashboardProps {
 
 export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing }: DashboardProps) {
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
+
+    // 1. Filter User Items & Partition by Category
     const sellerItems = items.filter(i =>
         i.sellerEmail?.toLowerCase() === currentUserEmail?.toLowerCase()
     );
 
-    // Find current user points from the items (assuming they are injected by App.tsx)
+    const gearItems = sellerItems.filter(i => i.type !== 'Recruiting');
+    const roleItems = sellerItems.filter(i => i.type === 'Recruiting');
+
+    // 2. Derive User Points
     const userPoints = sellerItems.length > 0 ? sellerItems[0].points : 0;
 
     const handleDelete = async (id: string) => {
@@ -34,7 +40,6 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
     const handleEditSubmit = async (updatedData: Omit<MarketplaceItem, 'id' | 'createdAt'>) => {
         if (!editingItem) return;
 
-        // Map back to DB column names
         const dbUpdates = {
             title: updatedData.title,
             description: updatedData.description,
@@ -62,8 +67,8 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
         return (
             <div className="dashboard-container">
                 <div className="dashboard-header">
-                    <h2>Edit Listing</h2>
-                    <p>Modify your item details below.</p>
+                    <h2>✏️ Edit Your Content</h2>
+                    <p>Modify your marketplace listing or recruitment role below.</p>
                 </div>
                 <ListingForm
                     initialData={editingItem}
@@ -74,63 +79,103 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
         );
     }
 
+    const renderItemCard = (item: MarketplaceItem) => (
+        <div key={item.id} className="dashboard-item">
+            <div className="dashboard-item-info">
+                {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.title} className="dashboard-item-img" />
+                ) : (
+                    <div className="dashboard-item-img" style={{ background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #cbd5e1' }}>
+                        <Package color="#94a3b8" />
+                    </div>
+                )}
+                <div className="dashboard-item-text">
+                    <h3>{item.title || 'Untitled Listing'}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span className={`status-badge ${item.isSold ? 'sold' : 'active'}`}>
+                            {item.isSold ? 'Sold' : 'Active'}
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                            ID: {item.id ? item.id.substring(0, 8) : 'Pending...'}
+                        </span>
+                    </div>
+                    <p className="item-meta">
+                        {item.society || 'Engineering'} &bull; {item.type || 'Gear'}
+                        {item.sellingPrice !== undefined && ` • £${item.sellingPrice.toFixed(2)}`}
+                    </p>
+                </div>
+            </div>
+
+            <div className="dashboard-item-actions">
+                {!item.isSold && item.type !== 'Recruiting' && (
+                    <button className="btn btn-outline" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => onMarkSold(item.id)}>
+                        Mark as Sold
+                    </button>
+                )}
+                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                    <button className="btn btn-primary" style={{ flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={() => setEditingItem(item)}>
+                        <Edit3 size={16} /> Edit
+                    </button>
+                    <button
+                        className="btn btn-outline"
+                        onClick={() => handleDelete(item.id)}
+                        style={{ color: '#ef4444', borderColor: '#ef4444', flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                    >
+                        <Trash2 size={16} /> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="dashboard-container">
-            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                    <h2>My Listings</h2>
-                    <p>Manage your listed items below.</p>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>Personal Terminal</h1>
+                    <p>Orchestrate your engineering listings and project recruitment.</p>
                 </div>
-                <div style={{ background: '#fef3c7', padding: '0.75rem 1.25rem', borderRadius: '12px', border: '1px solid #fcd34d', textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Score</span>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#92400e' }}>
-                        ⭐ {userPoints || 0} pts
+                <div className="score-badge">
+                    <span style={{ fontSize: '0.75rem', color: '#92400e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>Trust Score</span>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Star size={24} fill="#92400e" /> {userPoints || 0}
                     </div>
                 </div>
             </div>
 
-            {sellerItems.length === 0 ? (
-                <div className="empty-state">You haven't listed any items yet.</div>
-            ) : (
-                <div className="dashboard-items">
-                    {sellerItems.map(item => (
-                        <div key={item.id} className="dashboard-item">
-                            {item.imageUrl && (
-                                <img src={item.imageUrl} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', marginRight: '1rem', flexShrink: 0 }} />
-                            )}
-                            <div className="dashboard-item-info" style={{ flex: 1 }}>
-                                <h3>{item.title}</h3>
-                                <span className={`status-badge ${item.isSold ? 'sold' : 'active'}`}>
-                                    {item.isSold ? 'Sold' : 'Active'}
-                                </span>
-                                <p className="item-meta">
-                                    {item.type} &bull; {item.society}
-                                    {item.sellingPrice !== undefined && ` • £${item.sellingPrice.toFixed(2)}`}
-                                </p>
-                            </div>
-                            <div className="dashboard-item-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                {!item.isSold && (
-                                    <button className="btn btn-outline" onClick={() => onMarkSold(item.id)}>
-                                        Mark as Sold
-                                    </button>
-                                )}
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button className="btn btn-primary" style={{ flex: 1, padding: '0.5rem 1rem' }} onClick={() => setEditingItem(item)}>
-                                        ✏️ Edit
-                                    </button>
-                                    <button
-                                        className="btn btn-outline"
-                                        onClick={() => handleDelete(item.id)}
-                                        style={{ color: '#ef4444', borderColor: '#ef4444', flex: 1 }}
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                </div>
-                            </div>
+            <div className="dashboard-sections">
+                {/* SECTION: GEAR & ITEMS */}
+                <section>
+                    <h2 className="dashboard-section-title">
+                        <Package size={28} /> Engineering Gear & Equipment
+                    </h2>
+                    {gearItems.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+                            You aren't currently selling any equipment.
                         </div>
-                    ))}
-                </div>
-            )}
+                    ) : (
+                        <div className="dashboard-items">
+                            {gearItems.map(renderItemCard)}
+                        </div>
+                    )}
+                </section>
+
+                {/* SECTION: RECRUITMENT ROLES */}
+                <section>
+                    <h2 className="dashboard-section-title" style={{ color: '#6366f1' }}>
+                        <Users size={28} /> Active Recruitment Roles
+                    </h2>
+                    {roleItems.length === 0 ? (
+                        <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+                            No active society role postings found.
+                        </div>
+                    ) : (
+                        <div className="dashboard-items">
+                            {roleItems.map(renderItemCard)}
+                        </div>
+                    )}
+                </section>
+            </div>
         </div>
     );
 }

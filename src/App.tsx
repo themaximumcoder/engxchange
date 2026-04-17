@@ -19,6 +19,7 @@ import { UpdatePassword } from './components/UpdatePassword';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import type { MarketplaceItem, ForumPost, Comment, Message, Notification } from './types';
 import { supabase } from './lib/supabaseClient';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './App.css';
 
 const mapItemFromDB = (row: any): MarketplaceItem => ({
@@ -235,11 +236,10 @@ function MainApp() {
         supabase.auth.signOut();
         window.location.href = '/login';
         alert('For security reasons, you have been automatically logged out after 1 hour of zero keyboard or mouse activity.');
-      }, 3600000); // 1 hour globally
+      }, 3600000); // 1 hour
     };
 
     handleActivity();
-
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
     window.addEventListener('click', handleActivity);
@@ -259,9 +259,7 @@ function MainApp() {
     currentUserEmail.trim().toLowerCase().endsWith('.edu');
 
   const handleMarkSold = (id: string) => {
-    setItems(prev => prev.map(item =>
-      item.id === id ? { ...item, isSold: true } : item
-    ));
+    setItems(prev => prev.map(item => item.id === id ? { ...item, isSold: true } : item));
   };
 
   const handleDeleteListing = (id: string) => {
@@ -269,9 +267,7 @@ function MainApp() {
   };
 
   const handleUpdateListing = (id: string, updates: Partial<MarketplaceItem>) => {
-    setItems(prev => prev.map(item =>
-      item.id === id ? { ...item, ...updates } : item
-    ));
+    setItems(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
   const handleAddListing = async (newItemData: Omit<MarketplaceItem, 'id' | 'createdAt'>) => {
@@ -289,13 +285,10 @@ function MainApp() {
 
   const handleAddPost = async (newPostData: Omit<ForumPost, 'id' | 'createdAt' | 'upvotes'>) => {
     const dbPayload = mapPostToDB(newPostData);
-
-    // Gamification Increment
     if (session) {
       const { data: userData } = await supabase.from('users').select('points').eq('email', session.user.email).single();
       await supabase.from('users').update({ points: (userData?.points || 0) + 10 }).eq('email', session.user.email);
     }
-
     const { data, error } = await supabase.from('posts').insert([dbPayload]).select();
     if (!error && data && data.length > 0) {
       new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3').play().catch(() => { });
@@ -309,19 +302,9 @@ function MainApp() {
 
   const handleVote = async (postId: string, delta: number) => {
     if (!session?.user?.id) { alert('Please log in.'); navigate('/login'); return; }
-
     const currentVote = userVotes[postId] || 0;
-
-    let newDelta = 0;
-    let finalVoteStatus = 0;
-
-    if (currentVote === delta) {
-      newDelta = -delta;
-      finalVoteStatus = 0;
-    } else {
-      newDelta = delta - currentVote;
-      finalVoteStatus = delta;
-    }
+    let newDelta = currentVote === delta ? -delta : delta - currentVote;
+    let finalVoteStatus = currentVote === delta ? 0 : delta;
 
     if (delta > 0) new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3').play().catch(() => { });
     else new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3').play().catch(() => { });
@@ -335,42 +318,39 @@ function MainApp() {
 
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes: p.upvotes + newDelta } : p));
     await supabase.from('posts').update({ upvotes: currentPost.upvotes + newDelta }).eq('id', postId);
+
+    if (delta > 0 && finalVoteStatus === 1 && currentPost.authorEmail !== session.user.email) {
+      supabase.from('notifications').insert([{
+        user_email: currentPost.authorEmail,
+        type: 'like',
+        message: `${session.user.email} upvoted your post: "${currentPost.title.substring(0, 20)}..."`
+      }]).then();
+    }
+  };
+
+  const handleFriendRequest = async (targetEmail: string) => {
+    if (!session) { alert('Please login to add friends.'); return; }
+    new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3').play().catch(() => { });
+    const { error } = await supabase.from('notifications').insert([{
+      user_email: targetEmail,
+      type: 'friend_request',
+      message: `${session.user.email} sent you a friend request.`
+    }]);
+    if (!error) alert(`Friend request sent to ${targetEmail}!`);
   };
 
   const handleAddComment = async (postId: string, content: string) => {
     if (!session) return;
-    const payload = {
-      post_id: postId,
-      author_email: session.user.email,
-      content: content
-    };
-
-    // Gamification Increment
-    if (session) {
-      const { data: userData } = await supabase.from('users').select('points').eq('email', session.user.email).single();
-      await supabase.from('users').update({ points: (userData?.points || 0) + 5 }).eq('email', session.user.email);
-    }
-
+    const payload = { post_id: postId, author_email: session.user.email, content };
     const { data, error } = await supabase.from('comments').insert([payload]).select();
     if (!error && data && data.length > 0) {
       new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3').play().catch(() => { });
-      const newComment = {
-        id: data[0].id,
-        postId: data[0].post_id,
-        authorEmail: data[0].author_email,
-        content: data[0].content,
-        createdAt: data[0].created_at
-      };
+      const newComment = { id: data[0].id, postId: data[0].post_id, authorEmail: data[0].author_email, content: data[0].content, createdAt: data[0].created_at };
       setComments(prev => [...prev, newComment]);
-
       const postAuthor = posts.find(p => p.id === postId)?.authorEmail;
       if (postAuthor && postAuthor !== session.user.email) {
         supabase.from('notifications').insert([{ user_email: postAuthor, type: 'comment', message: `${session.user.email} commented on your post` }]).then();
       }
-
-    } else {
-      console.error(error);
-      alert('Failed to post comment. Ensure the comments table exists in Supabase.');
     }
   };
 
@@ -381,39 +361,50 @@ function MainApp() {
     if (!error && data && data.length > 0) {
       const newMsg = { id: data[0].id, senderEmail: data[0].sender_email, receiverEmail: data[0].receiver_email, content: data[0].content, read: data[0].read, createdAt: data[0].created_at };
       setMessages(prev => [...prev, newMsg]);
-
       supabase.from('notifications').insert([{ user_email: receiver, type: 'message', message: `${session.user.email} sent you a direct message` }]).then();
     }
   };
 
   const handleReport = async (itemId: string, itemType: string, reason: string) => {
-    if (!session) { alert('Logs require authentication.'); return; }
-    const payload = { item_id: itemId, item_type: itemType, reason, reported_by: session.user.email };
-    const { error } = await supabase.from('reports').insert([payload]);
-    if (!error) alert('Report definitively submitted. Our administrators will review this safely shortly.');
-    else alert('Failed to successfully submit report sequence. Database Error: ' + error.message);
+    if (!session) { alert('Authentication required.'); return; }
+    const { error } = await supabase.from('reports').insert([{ item_id: itemId, item_type: itemType, reason, reported_by: session.user.email }]);
+    if (!error) alert('Report submitted successfully.');
+  };
+
+  const handleLikeItem = async (itemId: string) => {
+    if (!session) { alert('Please login to like items.'); return; }
+    new Audio('https://www.soundjay.com/buttons/sounds/button-4.mp3').play().catch(() => { });
+    const item = items.find(i => i.id === itemId);
+    if (item && item.sellerEmail && item.sellerEmail !== session.user.email) {
+      supabase.from('notifications').insert([{
+        user_email: item.sellerEmail,
+        type: 'like',
+        message: `${session.user.email} liked your listing: "${item.title}"`
+      }]).then();
+      alert(`Interest noted! ${item.sellerEmail} has been notified.`);
+    }
+  };
+
+  const handleMarkNotificationRead = async (id: string) => {
+    const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
+    if (!error) setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
   const filteredItems = items.filter(i =>
-    i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    i.description.toLowerCase().includes(searchQuery.toLowerCase())
+  (i.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    i.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
   const filteredPosts = posts.filter(p =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+  (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.content?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
   const filteredProjects = globalProjects.filter(p =>
-    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-    if (!session) {
-      return <Navigate to="/login" replace />;
-    }
+    if (!session) return <Navigate to="/login" replace />;
     return <>{children}</>;
   };
 
@@ -421,7 +412,7 @@ function MainApp() {
     <div className="app-container">
       <Helmet>
         <title>engXchange | Engineering Marketplace & Forum</title>
-        <meta name="description" content="The premier decentralized marketplace and social forum designed specifically for engineering students to buy, sell, and collaborate on heavy projects." />
+        <meta name="description" content="The premier decentralized marketplace and social forum for engineering students." />
       </Helmet>
 
       <Navbar
@@ -435,94 +426,37 @@ function MainApp() {
       />
 
       <main className="main-content container">
-        <Routes>
-          <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} />} />
-          <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
-          <Route path="/list" element={
-            <RequireAuth>
-              <ListingForm
-                onSubmit={handleAddListing}
-                onCancel={() => navigate('/')}
-                initialData={{ sellerEmail: currentUserEmail } as any}
-              />
-            </RequireAuth>
-          } />
-          <Route path="/dashboard" element={
-            <RequireAuth>
-              <Dashboard
-                items={items}
-                currentUserEmail={currentUserEmail}
-                onMarkSold={handleMarkSold}
-                onDeleteListing={handleDeleteListing}
-                onUpdateListing={handleUpdateListing}
-              />
-            </RequireAuth>
-          } />
-          <Route path="/inbox" element={
-            <RequireAuth>
-              <MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} />
-            </RequireAuth>
-          } />
-          <Route path="/notifications" element={
-            <RequireAuth>
-              <NotificationsPage notifications={notifications} />
-            </RequireAuth>
-          } />
-          <Route path="/forum" element={
-            <ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => {
-              if (!session) { alert('Please log in.'); navigate('/login'); }
-              else { navigate('/create-post'); }
-            }} onVote={handleVote} onAddComment={handleAddComment} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />
-          } />
-          <Route path="/create-post" element={
-            <RequireAuth>
-              <ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} />
-            </RequireAuth>
-          } />
-          <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
-          <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
-          <Route path="/profile" element={
-            <RequireAuth>
-              <Profile session={session} />
-            </RequireAuth>
-          } />
-          <Route path="/admin" element={
-            <RequireAuth>
-              {session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Completely Denied</h2><p>You do not have overriding administrative privileges to perform queue tracking here.</p></div>}
-            </RequireAuth>
-          } />
-          <Route path="/update-password" element={<UpdatePassword />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/work" element={<WorkWithUsPage />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} />} />
+            <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
+            <Route path="/list" element={<RequireAuth><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail } as any} /></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
+            <Route path="/inbox" element={<RequireAuth><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
+            <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
+            <Route path="/create-post" element={<RequireAuth><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
+            <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
+            <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
+            <Route path="/profile" element={<RequireAuth><Profile session={session} /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} reports={[]} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
+            <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/work" element={<WorkWithUsPage />} />
+          </Routes>
+        </ErrorBoundary>
       </main>
+
       <Footer />
+
       {session && (
         <nav className="mobile-nav">
-          <div onClick={() => navigate('/')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.2rem' }}>🏠</span><span style={{ fontSize: '0.7rem', color: '#4b5563', fontWeight: 500 }}>Home</span>
-          </div>
-          <div onClick={() => navigate('/forum')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.2rem' }}>💬</span><span style={{ fontSize: '0.7rem', color: '#4b5563', fontWeight: 500 }}>Forum</span>
-          </div>
-          <div onClick={() => navigate('/notifications')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.2rem', position: 'relative' }}>
-              🔔
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#ef4444', color: '#fff', fontSize: '0.6rem', fontWeight: 'bold', padding: '0.1rem 0.3rem', borderRadius: '50%' }}>
-                  {notifications.filter(n => !n.read).length}
-                </span>
-              )}
-            </span>
-            <span style={{ fontSize: '0.7rem', color: '#4b5563', fontWeight: 500 }}>Alerts</span>
-          </div>
-          <div onClick={() => navigate('/inbox')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.2rem' }}>📬</span><span style={{ fontSize: '0.7rem', color: '#4b5563', fontWeight: 500 }}>DM</span>
-          </div>
-          <div onClick={() => navigate('/profile')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.2rem' }}>👤</span><span style={{ fontSize: '0.7rem', color: '#4b5563', fontWeight: 500 }}>Profile</span>
-          </div>
+          <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>🏠</div>
+          <div onClick={() => navigate('/forum')} style={{ cursor: 'pointer' }}>💬</div>
+          <div onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }}>🔔</div>
+          <div onClick={() => navigate('/inbox')} style={{ cursor: 'pointer' }}>📬</div>
+          <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>👤</div>
         </nav>
       )}
     </div>

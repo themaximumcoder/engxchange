@@ -83,6 +83,35 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
         <div className="feed-container">
             <HeroCarousel />
 
+            {/* SECTION: SOCIETY RECRUITMENT & ROLES (TOP) */}
+            {recruitingItems.length > 0 && (
+                <div className="feed-section" style={{ marginBottom: '3rem' }}>
+                    <div className="feed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <div>
+                            <h2 style={{ marginBottom: '0.25rem' }}>Society Recruitment & Roles 👥</h2>
+                            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Find your next engineering venture or leadership position.</p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Sort Roles:</span>
+                            <select
+                                value={recruitSortOption}
+                                onChange={e => setRecruitSortOption(e.target.value)}
+                                style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem', cursor: 'pointer', background: '#fff' }}
+                            >
+                                <option value="newest">Latest Postings</option>
+                                <option value="a-z">Role Name (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="items-grid">
+                        {sortRecruitItems(recruitingItems).map((item) => (
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* SECTION 1: HOT LISTINGS (SLIDER) */}
             {hotItems.length > 0 && (
                 <div className="feed-section">
@@ -135,34 +164,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
             </div>
 
 
-            {/* SECTION: SOCIETY RECRUITMENT & ROLES (BOTTOM) */}
-            {recruitingItems.length > 0 && (
-                <div className="feed-section" style={{ marginTop: '5rem', borderTop: '1px solid #e5e7eb', paddingTop: '4rem' }}>
-                    <div className="feed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                        <div>
-                            <h2 style={{ color: '#4f46e5', marginBottom: '0.25rem' }}>Society Recruitment & Roles 👥</h2>
-                            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Find your next engineering venture or leadership position.</p>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Sort Roles:</span>
-                            <select
-                                value={recruitSortOption}
-                                onChange={e => setRecruitSortOption(e.target.value)}
-                                style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem', cursor: 'pointer', background: '#f9fafb' }}
-                            >
-                                <option value="newest">Latest Postings</option>
-                                <option value="a-z">Role Name (A-Z)</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div className="items-grid">
-                        {sortRecruitItems(recruitingItems).map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

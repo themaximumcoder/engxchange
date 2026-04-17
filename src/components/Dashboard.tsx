@@ -98,7 +98,7 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                     </div>
                     <p className="item-meta">
                         {item.society || 'Engineering'} &bull; {item.type || 'Gear'}
-                        {item.sellingPrice !== undefined && ` • £${item.sellingPrice.toFixed(2)}`}
+                        {item.sellingPrice != null && ` • £${item.sellingPrice.toFixed(2)}`}
                     </p>
                 </div>
             </div>

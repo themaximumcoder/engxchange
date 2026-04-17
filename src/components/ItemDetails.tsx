@@ -40,11 +40,11 @@ export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], i
                     <div className="info-price-section">
                         {item.type !== 'Recruiting' && (
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
-                                <span className="info-selling-price">£{item.sellingPrice?.toFixed(2)}</span>
+                                <span className="info-selling-price">£{item.sellingPrice?.toFixed(2) ?? '0.00'}</span>
                                 {discountPercent > 0 && (
                                     <>
                                         <span className="info-discount">-{discountPercent}% OFF</span>
-                                        <span className="info-original-price">£{item.originalPrice?.toFixed(2)}</span>
+                                        <span className="info-original-price">£{item.originalPrice?.toFixed(2) ?? '0.00'}</span>
                                     </>
                                 )}
                             </div>

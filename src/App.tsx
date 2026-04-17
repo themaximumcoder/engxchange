@@ -370,6 +370,40 @@ function MainApp() {
     }
   };
 
+  const sendEmailNotification = async (to: string, sender: string, content: string) => {
+    const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+    if (!apiKey) return;
+
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          from: 'engXchange Alerts <notifications@resend.dev>',
+          to: [to],
+          subject: `New Message from ${sender} on engXchange`,
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2 style="color: #2563eb;">You've got mail! 📬</h2>
+              <p><strong>${sender}</strong> sent you a message about an item on engXchange:</p>
+              <blockquote style="background: #f1f5f9; padding: 15px; border-left: 4px solid #2563eb; margin: 20px 0;">
+                "${content}"
+              </blockquote>
+              <p><a href="https://engxchange.com/inbox" style="display: inline-block; background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Reply on engXchange</a></p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+              <p style="font-size: 0.8rem; color: #64748b;">This is an automated notification. You can manage your alerts in your profile settings.</p>
+            </div>
+          `
+        })
+      });
+    } catch (err) {
+      console.error('Email notification failed:', err);
+    }
+  };
+
   const handleSendMessage = async (receiver: string, content: string) => {
     if (!session) return;
     const payload = { sender_email: session.user.email, receiver_email: receiver, content };
@@ -377,7 +411,12 @@ function MainApp() {
     if (!error && data && data.length > 0) {
       const newMsg = { id: data[0].id, senderEmail: data[0].sender_email, receiverEmail: data[0].receiver_email, content: data[0].content, read: data[0].read, createdAt: data[0].created_at };
       setMessages(prev => [...prev, newMsg]);
+      
+      // Send in-app notification
       supabase.from('notifications').insert([{ user_email: receiver, type: 'message', message: `${session.user.email} sent you a direct message` }]).then();
+      
+      // Trigger email notification
+      sendEmailNotification(receiver, session.user.email!, content);
     }
   };
 

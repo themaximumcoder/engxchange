@@ -24,10 +24,10 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
     const placeholderText = isForum ? "Search forum conversations..." : "Search items for sale...";
 
     return (
-        <nav className="navbar" style={{ height: '80px' }}>
+        <nav className="navbar" style={{ height: '140px' }}>
             <div className="container nav-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '1rem', padding: '0 0.5rem' }}>
                 <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', marginLeft: '-15px' }}>
-                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '56px', objectFit: 'contain' }} />
+                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '112px', objectFit: 'contain' }} />
                 </Link>
 
                 <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, overflow: 'hidden' }}>

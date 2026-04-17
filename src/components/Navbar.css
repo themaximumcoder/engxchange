@@ -1,0 +1,64 @@
+.navbar {
+    background-color: var(--primary);
+    border-bottom: 1px solid var(--border-color);
+    height: var(--header-height);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.nav-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-logo {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+}
+
+.nav-brand-text {
+    display: flex;
+    align-items: center;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.mock-login {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border-color);
+}
+
+.mock-email-input {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    width: 180px;
+}
+
+.mock-email-input:focus {
+    outline: none;
+    border-color: var(--secondary);
+}

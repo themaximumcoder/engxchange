@@ -7,26 +7,27 @@ import './ListingForm.css';
 interface ListingFormProps {
     onSubmit: (item: Omit<MarketplaceItem, 'id' | 'createdAt'>) => void;
     onCancel: () => void;
+    initialData?: MarketplaceItem;
 }
 
-export function ListingForm({ onSubmit, onCancel }: ListingFormProps) {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [society, setSociety] = useState<SocietyName>('Hyped');
-    const [type, setType] = useState<EntryType>('Materials');
-    const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'meetup' | 'both'>('meetup');
-    const [originalPrice, setOriginalPrice] = useState<string>('');
-    const [sellingPrice, setSellingPrice] = useState<string>('');
+export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProps) {
+    const [title, setTitle] = useState(initialData?.title || '');
+    const [description, setDescription] = useState(initialData?.description || '');
+    const [society, setSociety] = useState<SocietyName>(initialData?.society || 'Hyped');
+    const [type, setType] = useState<EntryType>(initialData?.type || 'Materials');
+    const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'meetup' | 'both'>(initialData?.deliveryMethod || 'meetup');
+    const [originalPrice, setOriginalPrice] = useState<string>(initialData?.originalPrice?.toString() || '');
+    const [sellingPrice, setSellingPrice] = useState<string>(initialData?.sellingPrice?.toString() || '');
     const [imageFile, setImageFile] = useState<File | null>(null);
-    const [sellerEmail, setSellerEmail] = useState('');
-    const [sellerPhone, setSellerPhone] = useState('');
+    const [sellerEmail, setSellerEmail] = useState(initialData?.sellerEmail || '');
+    const [sellerPhone, setSellerPhone] = useState(initialData?.sellerPhone || '');
     const [uploading, setUploading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setUploading(true);
 
-        let uploadedImageUrl = undefined;
+        let uploadedImageUrl = initialData?.imageUrl;
         if (imageFile) {
             const fileExt = imageFile.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
@@ -52,8 +53,8 @@ export function ListingForm({ onSubmit, onCancel }: ListingFormProps) {
             sellerEmail: sellerEmail || undefined,
             sellerPhone: sellerPhone || undefined,
             deliveryMethod: type === 'Recruiting' ? undefined : deliveryMethod,
-            views: 0,
-            isSold: false
+            views: initialData?.views || 0,
+            isSold: initialData?.isSold || false
         });
         setUploading(false);
     };

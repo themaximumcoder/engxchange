@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { MarketplaceItem } from '../types';
+import { ListingForm } from './ListingForm';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -7,16 +9,65 @@ interface DashboardProps {
     currentUserEmail: string;
     onMarkSold: (id: string) => void;
     onDeleteListing: (id: string) => void;
+    onUpdateListing: (id: string, updates: Partial<MarketplaceItem>) => void;
 }
 
-export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing }: DashboardProps) {
+export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing }: DashboardProps) {
+    const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
     const sellerItems = items.filter(i => i.sellerEmail === currentUserEmail);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to permanently delete this listing?')) return;
-        await supabase.from('items').delete().eq('id', id);
-        onDeleteListing(id);
+        const { error } = await supabase.from('items').delete().eq('id', id);
+        if (error) {
+            alert('Delete failed: ' + error.message);
+        } else {
+            onDeleteListing(id);
+        }
     };
+
+    const handleEditSubmit = async (updatedData: Omit<MarketplaceItem, 'id' | 'createdAt'>) => {
+        if (!editingItem) return;
+
+        // Map back to DB column names
+        const dbUpdates = {
+            title: updatedData.title,
+            description: updatedData.description,
+            price: updatedData.sellingPrice,
+            original_price: updatedData.originalPrice,
+            society: updatedData.society,
+            type: updatedData.type,
+            image_url: updatedData.imageUrl,
+            delivery_method: updatedData.deliveryMethod,
+            seller_phone: updatedData.sellerPhone,
+            seller_email: updatedData.sellerEmail
+        };
+
+        const { error } = await supabase.from('items').update(dbUpdates).eq('id', editingItem.id);
+
+        if (error) {
+            alert('Update failed: ' + error.message);
+        } else {
+            onUpdateListing(editingItem.id, updatedData);
+            setEditingItem(null);
+        }
+    };
+
+    if (editingItem) {
+        return (
+            <div className="dashboard-container">
+                <div className="dashboard-header">
+                    <h2>Edit Listing</h2>
+                    <p>Modify your item details below.</p>
+                </div>
+                <ListingForm
+                    initialData={editingItem}
+                    onSubmit={handleEditSubmit}
+                    onCancel={() => setEditingItem(null)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard-container">
@@ -50,13 +101,18 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                                         Mark as Sold
                                     </button>
                                 )}
-                                <button
-                                    className="btn btn-outline"
-                                    onClick={() => handleDelete(item.id)}
-                                    style={{ color: '#ef4444', borderColor: '#ef4444' }}
-                                >
-                                    🗑️ Delete
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button className="btn btn-primary" style={{ flex: 1, padding: '0.5rem 1rem' }} onClick={() => setEditingItem(item)}>
+                                        ✏️ Edit
+                                    </button>
+                                    <button
+                                        className="btn btn-outline"
+                                        onClick={() => handleDelete(item.id)}
+                                        style={{ color: '#ef4444', borderColor: '#ef4444', flex: 1 }}
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

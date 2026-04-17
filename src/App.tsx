@@ -259,6 +259,12 @@ function MainApp() {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleUpdateListing = (id: string, updates: Partial<MarketplaceItem>) => {
+    setItems(prev => prev.map(item =>
+      item.id === id ? { ...item, ...updates } : item
+    ));
+  };
+
   const handleAddListing = async (newItemData: Omit<MarketplaceItem, 'id' | 'createdAt'>) => {
     const dbPayload = mapItemToDB(newItemData);
     const { data, error } = await supabase.from('items').insert([dbPayload]).select();
@@ -413,12 +419,22 @@ function MainApp() {
           <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} />} />
           <Route path="/list" element={
             <RequireAuth>
-              <ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} />
+              <ListingForm
+                onSubmit={handleAddListing}
+                onCancel={() => navigate('/')}
+                initialData={{ sellerEmail: currentUserEmail } as any}
+              />
             </RequireAuth>
           } />
           <Route path="/dashboard" element={
             <RequireAuth>
-              <Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} />
+              <Dashboard
+                items={items}
+                currentUserEmail={currentUserEmail}
+                onMarkSold={handleMarkSold}
+                onDeleteListing={handleDeleteListing}
+                onUpdateListing={handleUpdateListing}
+              />
             </RequireAuth>
           } />
           <Route path="/inbox" element={

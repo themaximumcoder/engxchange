@@ -1,17 +1,14 @@
 /// <reference types="@types/google.maps" />
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-    APIProvider,
     Map,
-    AdvancedMarker,
-    Pin,
+    Marker,
     useMap,
     useMapsLibrary,
     type MapMouseEvent,
 } from '@vis.gl/react-google-maps';
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-const MAP_ID = 'engxchange_map_id';
+
 
 interface LocationPickerProps {
     initialLat?: number;
@@ -109,21 +106,16 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
 
     return (
         <div style={{ height: '350px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
-            <APIProvider apiKey={API_KEY} libraries={['places']}>
-                {!readOnly && <AutocompleteCustom onPlaceSelect={handlePlaceSelect} />}
-                <Map
-                    center={markerLocation}
-                    defaultZoom={15}
-                    mapId={MAP_ID}
-                    onClick={handleMapClick}
-                    disableDefaultUI={readOnly}
-                    gestureHandling={readOnly ? 'none' : 'auto'}
-                >
-                    <AdvancedMarker position={markerLocation}>
-                        <Pin background={'#ef4444'} glyphColor={'#fff'} borderColor={'#000'} />
-                    </AdvancedMarker>
-                </Map>
-            </APIProvider>
+            {!readOnly && <AutocompleteCustom onPlaceSelect={handlePlaceSelect} />}
+            <Map
+                center={markerLocation}
+                defaultZoom={15}
+                onClick={handleMapClick}
+                disableDefaultUI={readOnly}
+                gestureHandling={readOnly ? 'none' : 'auto'}
+            >
+                <Marker position={markerLocation} />
+            </Map>
             {!readOnly && (
                 <div style={{ padding: '0.6rem 0.75rem', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b', borderTop: '1px solid #e2e8f0' }}>
                     📍 Search above or click the map to refine your pin.

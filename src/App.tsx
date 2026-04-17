@@ -23,7 +23,10 @@ import { supabase } from './lib/supabaseClient';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import type { Session, RealtimeChannel } from '@supabase/supabase-js';
 import { Analytics } from "@vercel/analytics/react";
+import { APIProvider } from '@vis.gl/react-google-maps';
 import './App.css';
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
 
 const RequireAuth = ({ session, children }: { session: Session | null, children: React.ReactNode }) => {
   if (!session) return <Navigate to="/login" replace />;
@@ -477,6 +480,7 @@ function MainApp() {
 
 
   return (
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
     <div className="app-container">
       <Helmet>
         <title>engXchange | Engineering Marketplace & Forum</title>
@@ -532,6 +536,7 @@ function MainApp() {
       )}
       <Analytics />
     </div>
+    </APIProvider>
   );
 }
 

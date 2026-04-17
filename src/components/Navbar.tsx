@@ -26,7 +26,7 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
     return (
         <nav className="navbar" style={{ height: '140px' }}>
             <div className="container nav-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '1rem', padding: '0 0.5rem' }}>
-                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', marginLeft: '-15px' }}>
+                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', marginLeft: '-15px', transform: 'translateY(-10px)' }}>
                     <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '112px', objectFit: 'contain' }} />
                 </Link>
 

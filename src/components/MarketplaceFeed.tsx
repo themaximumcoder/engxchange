@@ -186,6 +186,14 @@ function getTimeAgo(dateString: string): string {
     }
 }
 
+function getPlaceholderImage(society: string): string {
+    const s = society.toLowerCase();
+    if (s.includes('comp') || s.includes('elec')) return '/placeholders/circuit.png';
+    if (s.includes('bio') || s.includes('chem')) return '/placeholders/bio.png';
+    if (s.includes('civil') || s.includes('struct') || s.includes('truss')) return '/placeholders/truss.png';
+    return '/placeholders/gears.png';
+}
+
 function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
@@ -242,8 +250,8 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                 {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.title} className="item-image" />
                 ) : (
-                    <div className="placeholder-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', color: '#94a3b8' }}>
-                        <span style={{ fontSize: '2rem' }}>📦</span>
+                    <div className="placeholder-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+                        <img src={getPlaceholderImage(item.society)} alt="Placeholder" style={{ width: '80%', height: '80%', objectFit: 'contain', opacity: 0.6 }} />
                     </div>
                 )}
                 <button

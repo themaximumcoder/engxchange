@@ -203,21 +203,21 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
             <div className="item-footer">
                 {item.type !== 'Recruiting' && (
                     <div className="price-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span className="price-selling" style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.25rem' }}>
+                        <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.25rem' }}>
                             £{finalSellingPrice?.toFixed(2) || '0.00'}
                         </span>
                         {hasDiscount && (
                             <>
-                                <span className="price-original" style={{ textDecoration: 'line-through', color: '#000', fontSize: '0.85rem' }}>
-                                    £{item.originalPrice?.toFixed(2)}
+                                <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                                    -{discountPercent}%
                                 </span>
-                                <span className="discount-badge" style={{ background: '#fef08a', color: '#854d0e', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                                    {discountPercent}% OFF
+                                <span style={{ textDecoration: 'line-through', color: '#111', fontSize: '0.8rem', fontWeight: 'normal' }}>
+                                    £{item.originalPrice?.toFixed(2)}
                                 </span>
                             </>
                         )}
                         {hasStudentDiscount && (
-                            <span className="discount-badge" style={{ background: '#10b981', marginLeft: 'auto', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Student</span>
+                            <span style={{ background: '#10b981', marginLeft: 'auto', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Student</span>
                         )}
                     </div>
                 )}

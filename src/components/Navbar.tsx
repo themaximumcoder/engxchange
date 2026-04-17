@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -13,6 +13,11 @@ interface NavbarProps {
 
 export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl }: NavbarProps) {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Determine context-aware placeholder
+    const isForum = location.pathname === '/forum';
+    const placeholderText = isForum ? "Search forum conversations..." : "Search items for sale...";
 
     return (
         <nav className="navbar">
@@ -25,10 +30,10 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                         <input
                             type="text"
                             list="search-suggestions"
-                            placeholder="Search items..."
+                            placeholder={placeholderText}
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', maxWidth: '300px', minWidth: '150px', fontSize: '1rem' }}
+                            style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', maxWidth: '300px', minWidth: '150px', fontSize: '1rem', color: '#374151' }}
                         />
                         {suggestions && suggestions.length > 0 && (
                             <datalist id="search-suggestions">

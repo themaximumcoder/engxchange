@@ -390,6 +390,17 @@ function MainApp() {
     i.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredPosts = posts.filter(p =>
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredProjects = globalProjects.filter(p =>
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     if (!session) {
       return <Navigate to="/login" replace />;
@@ -448,7 +459,7 @@ function MainApp() {
             </RequireAuth>
           } />
           <Route path="/forum" element={
-            <ForumFeed posts={posts} projects={globalProjects} comments={comments} userVotes={userVotes} onCreatePost={() => {
+            <ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => {
               if (!session) { alert('Please log in.'); navigate('/login'); }
               else { navigate('/create-post'); }
             }} onVote={handleVote} onAddComment={handleAddComment} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />

@@ -24,17 +24,11 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
         <nav className="navbar">
             <div className="container nav-container">
                 <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    {location.pathname === '/' ? (
-                        <img src="/logo_custom.png" alt="engXchange Logo" style={{ height: '70px', objectFit: 'contain' }} />
-                    ) : (
-                        <>
-                            <img src="/logo.png" alt="engXchange Logo" style={{ height: '42px', objectFit: 'contain' }} />
-                            <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em', display: 'flex', fontFamily: '"Inter", sans-serif' }}>
-                                <span style={{ color: '#000000' }}>Engineering</span>
-                                <span style={{ color: '#ef4444', marginLeft: '0.2rem' }}>Exchange</span>
-                            </span>
-                        </>
-                    )}
+                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '48px', objectFit: 'contain' }} />
+                    <span className="brand-text-container" style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em', display: 'flex', fontFamily: '"Inter", sans-serif' }}>
+                        <span style={{ color: '#000000' }}>Engineering</span>
+                        <span style={{ color: '#ef4444', marginLeft: '0.2rem' }}>Exchange</span>
+                    </span>
                 </Link>
                 <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -79,21 +73,21 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                         </div>
                     )}
 
-                    <div className="desktop-only" style={{ display: 'flex', gap: '1rem' }}>
-                        <Link to="/forum" className="btn btn-outline" style={{ textDecoration: 'none' }}>
-                            Community Forum
+                    <div className="desktop-nav-group" style={{ display: 'flex', gap: '0.75rem', borderLeft: '1px solid #e5e7eb', paddingLeft: '1rem', marginLeft: '0.5rem' }}>
+                        <Link to="/forum" className="nav-link-secondary" title="Community Forum">
+                             Community
                         </Link>
                         {isLoggedIn && (
                             <>
-                                <Link to="/inbox" className="btn btn-outline" style={{ textDecoration: 'none', color: '#10b981', borderColor: '#10b981' }}>
+                                <Link to="/inbox" className="nav-link-secondary" style={{ color: '#10b981' }} title="Private Messages">
                                     Messages
                                 </Link>
-                                <Link to="/dashboard" className="btn btn-outline" style={{ textDecoration: 'none' }}>
+                                <Link to="/dashboard" className="nav-link-secondary" title="My Dashboard">
                                     Dashboard
                                 </Link>
                             </>
                         )}
-                        <Link to="/list" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                        <Link to="/list" className="btn btn-primary" style={{ textDecoration: 'none', marginLeft: '0.5rem', padding: '0.4rem 1rem' }}>
                             List an Item
                         </Link>
                     </div>

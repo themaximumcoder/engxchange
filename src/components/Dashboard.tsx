@@ -16,13 +16,10 @@ interface DashboardProps {
 export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing }: DashboardProps) {
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
 
-    // 1. Filter User Items & Partition by Category
     const sellerItems = items.filter(i =>
         i.sellerEmail?.toLowerCase() === currentUserEmail?.toLowerCase()
     );
-
-    const gearItems = sellerItems.filter(i => i.type !== 'Recruiting');
-    const roleItems = sellerItems.filter(i => i.type === 'Recruiting');
+    const gearItems = sellerItems;
 
     // 2. Derive User Points
     const userPoints = sellerItems.length > 0 ? sellerItems[0].points : 0;
@@ -160,21 +157,6 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                     )}
                 </section>
 
-                {/* SECTION: RECRUITMENT ROLES */}
-                <section>
-                    <h2 className="dashboard-section-title" style={{ color: '#6366f1' }}>
-                        <Users size={28} /> Active Recruitment Roles
-                    </h2>
-                    {roleItems.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
-                            No active society role postings found.
-                        </div>
-                    ) : (
-                        <div className="dashboard-items">
-                            {roleItems.map(renderItemCard)}
-                        </div>
-                    )}
-                </section>
             </div>
         </div>
     );

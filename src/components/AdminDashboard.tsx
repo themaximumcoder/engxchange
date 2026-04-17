@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export function AdminDashboard() {
+export function AdminDashboard({ items = [], reports: _propReports = [] }: { items?: any[], reports?: any[] }) {
+    console.log(`Admin context: handling ${items.length} marketplace items.`);
     const [reports, setReports] = useState<any[]>([]);
     const [stats, setStats] = useState({ items: 0, posts: 0, usersTotal: 0, usersToday: 0 });
     const [loading, setLoading] = useState(true);

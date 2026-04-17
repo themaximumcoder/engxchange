@@ -1,6 +1,6 @@
 import type { Notification } from '../types';
 
-export function NotificationsPage({ notifications }: { notifications: Notification[] }) {
+export function NotificationsPage({ notifications, onMarkRead }: { notifications: Notification[], onMarkRead: (id: string) => Promise<void> }) {
     return (
         <div style={{ background: '#fff', borderRadius: '12px', padding: '2rem', minHeight: '600px', border: '1px solid #e5e7eb' }}>
             <h2 style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #e5e7eb', color: '#1e293b' }}>
@@ -19,6 +19,14 @@ export function NotificationsPage({ notifications }: { notifications: Notificati
                                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{new Date(n.createdAt).toLocaleString()}</span>
                             </div>
                             <p style={{ margin: 0, color: '#334155', fontSize: '0.95rem' }}>{n.message}</p>
+                            {!n.read && (
+                                <button
+                                    onClick={() => onMarkRead(n.id)}
+                                    style={{ marginTop: '0.75rem', fontSize: '0.75rem', background: 'none', border: '1px solid #3b82f6', color: '#3b82f6', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                                >
+                                    Mark as Seen
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>

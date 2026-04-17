@@ -26,17 +26,6 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
         lng: initialLng || -3.1883,
     });
 
-    if (API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        return (
-            <div style={{ height: '300px', width: '100%', borderRadius: '12px', background: '#f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '1rem', border: '1px solid #e2e8f0' }}>
-                <p style={{ color: '#475569', marginBottom: '0.5rem', fontWeight: 600 }}>Google Maps Preview Mode</p>
-                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>To enable live pinpointing, please provide a valid Google Maps API Key in <code>LocationPicker.tsx</code>.</p>
-                <div style={{ marginTop: '1rem', background: '#fff', padding: '0.5rem 1rem', borderRadius: '4px', fontSize: '0.9rem', color: '#1e293b', border: '1px solid #cbd5e1' }}>
-                    Coordinates: {markerLocation.lat.toFixed(4)}, {markerLocation.lng.toFixed(4)}
-                </div>
-            </div>
-        );
-    }
 
     const handleMapClick = useCallback((ev: any) => {
         if (readOnly) return;

@@ -1,6 +1,7 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, useSTL, Center } from '@react-three/drei';
+import { Canvas, useLoader } from '@react-three/fiber';
+import { OrbitControls, Stage, Center } from '@react-three/drei';
 import { Suspense } from 'react';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
 /**
  * STLViewer provides a professional-grade 3D inspection environment.
@@ -15,7 +16,7 @@ export function STLViewer({ url }: { url: string }) {
                 </div>
             }>
                 <Canvas shadows camera={{ position: [0, 0, 10], fov: 50 }}>
-                    <Stage environment="city" intensity={0.6} contactShadow={{ opacity: 0.7, blur: 2 }}>
+                    <Stage environment="city" intensity={0.6} shadows={{ type: 'contact', opacity: 0.7, blur: 2 }}>
                         <Center>
                             <Model url={url} />
                         </Center>
@@ -28,7 +29,7 @@ export function STLViewer({ url }: { url: string }) {
 }
 
 function Model({ url }: { url: string }) {
-    const geometry = useSTL(url);
+    const geometry = useLoader(STLLoader, url);
     return (
         <mesh geometry={geometry} castShadow receiveShadow>
             <meshStandardMaterial color="#64748b" roughness={0.3} metalness={0.8} />

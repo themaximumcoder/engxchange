@@ -47,24 +47,44 @@ export function Login({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     };
 
     return (
-        <div className="form-container" style={{ padding: '2.5rem', maxWidth: '400px', margin: '4rem auto', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.75rem', color: '#111827', textAlign: 'center' }}>Welcome Back</h2>
+        <div className="form-container" style={{ padding: '2.5rem', maxWidth: '400px', margin: '4rem auto', background: '#fff', borderRadius: '12px', boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.75rem', color: '#111827' }}>engXchange Login</h2>
+                <p style={{ color: '#6b7280', marginTop: '0.5rem', fontSize: '0.9rem' }}>Secure access to your student account</p>
+            </div>
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontWeight: 600, color: '#374151' }}>Email Address</label>
-                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="student@university.ac.uk" />
+                    <label style={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}>University Email (.ac.uk)</label>
+                    <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        autoComplete="email"
+                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' }}
+                        placeholder="student@ed.ac.uk"
+                    />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontWeight: 600, color: '#374151' }}>Password</label>
-                    <input type="password" required value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="••••••••" />
+                    <label style={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}>Password</label>
+                    <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        autoComplete="current-password"
+                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' }}
+                        placeholder="••••••••"
+                    />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                    <button type="submit" disabled={loading} className="btn btn-primary" style={{ padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold', flex: 1 }}>
-                        {loading ? 'Logging in...' : 'Log In'}
-                    </button>
-                    <button type="button" onClick={handleForgotPassword} disabled={loading} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline', padding: '0 1rem' }}>
-                        Forgot Password?
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{ padding: '1rem', fontSize: '1rem', fontWeight: 'bold', marginTop: '1rem', borderRadius: '8px' }}>
+                    {loading ? 'Authenticating...' : 'Sign In To System'}
+                </button>
+
+                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <button type="button" onClick={handleForgotPassword} disabled={loading} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>
+                        Trouble logging in? Reset Password
                     </button>
                 </div>
             </form>

@@ -53,6 +53,7 @@ const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
   title: item.title,
   description: item.description,
   price: item.sellingPrice,
+  original_price: item.originalPrice,
   society: item.society,
   type: item.type,
   image_url: item.imageUrl,

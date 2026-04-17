@@ -205,7 +205,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
     const hasStudentDiscount = isStudentVerified && baseSellingPrice !== undefined && baseSellingPrice > 0;
     const finalSellingPrice = hasStudentDiscount ? baseSellingPrice * 0.9 : baseSellingPrice;
 
-    const hasDiscount = item.originalPrice && finalSellingPrice && item.originalPrice > finalSellingPrice;
+    const hasDiscount = !!(item.originalPrice && finalSellingPrice && item.originalPrice > finalSellingPrice);
     const discountPercent = hasDiscount
         ? Math.round(((item.originalPrice! - finalSellingPrice!) / item.originalPrice!) * 100)
         : 0;
@@ -256,7 +256,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
                     {item.origin && <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.85rem' }}>{item.origin}</span>}
                     {item.degree && <span style={{ color: '#4b5563', fontSize: '0.85rem', fontStyle: 'italic' }}>{item.degree}</span>}
                     {item.yearOfStudy && <span style={{ backgroundColor: badgeColor, color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{item.yearOfStudy}</span>}
-                    {item.points !== undefined && <span style={{ color: '#ca8a04', fontWeight: 'bold', fontSize: '0.85rem' }}>⭐ {item.points} pts</span>}
+                    {!!item.points && <span style={{ color: '#ca8a04', fontWeight: 'bold', fontSize: '0.85rem' }}>⭐ {item.points} pts</span>}
                 </div>
                 <span className="item-type">{item.type}</span>
                 {renderDeliveryBadge()}
@@ -277,14 +277,14 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
                             £{finalSellingPrice?.toFixed(2) || '0.00'}
                         </span>
                         {hasDiscount && (
-                            <>
-                                <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '0.85rem' }}>
                                     -{discountPercent}%
                                 </span>
-                                <span style={{ textDecoration: 'line-through', color: '#111', fontSize: '0.8rem', fontWeight: 'normal' }}>
+                                <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.8rem', fontWeight: 'normal' }}>
                                     £{item.originalPrice?.toFixed(2)}
                                 </span>
-                            </>
+                            </div>
                         )}
                         {hasStudentDiscount && (
                             <span style={{ background: '#10b981', marginLeft: 'auto', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Student</span>

@@ -14,7 +14,7 @@ interface MarketplaceFeedProps {
 
 const NEWS_SLIDES = [
     { id: 1, title: 'Build and Iterate', subtitle: 'Join thousands of engineers shaping the future locally.', img: '/hero-uploaded.png' },
-    { id: 2, title: 'New 3D Model Gallery', subtitle: 'Our community forum now supports direct .STL file uploads.', img: '/slideshowimage2.png' },
+    { id: 2, title: 'New 3D Model Gallery', subtitle: 'Our community forum now supports direct .STL file uploads.', img: '/3dcad_image.jpg' },
     { id: 3, title: 'Society Recruiting', subtitle: 'Join Hyped or Formula Student - applications are open.', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80' }
 ];
 

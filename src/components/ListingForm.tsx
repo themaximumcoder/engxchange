@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ENTRY_TYPES, SOCIETIES } from '../types';
-import type { MarketplaceItem, SocietyName, EntryType } from '../types';
+import { ENTRY_TYPES } from '../types';
+import type { MarketplaceItem, EntryType } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { Truck, MapPin } from 'lucide-react';
 import { LocationPicker } from './LocationPicker';

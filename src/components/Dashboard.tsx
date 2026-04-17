@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { MarketplaceItem } from '../types';
 import { ListingForm } from './ListingForm';
-import { Package, Users, Star, Edit3, Trash2 } from 'lucide-react';
+import { Package, Star, Edit3, Trash2 } from 'lucide-react';
 import './Dashboard.css';
 
 interface DashboardProps {

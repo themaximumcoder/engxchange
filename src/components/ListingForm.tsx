@@ -16,6 +16,9 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
     const [society, setSociety] = useState<SocietyName>(initialData?.society || 'Hyped');
     const [type, setType] = useState<EntryType>(initialData?.type || 'Materials');
     const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'meetup' | 'both'>(initialData?.deliveryMethod || 'meetup');
+    const [meetupLocationName, setMeetupLocationName] = useState(initialData?.meetupLocationName || '');
+    const [meetupLat, setMeetupLat] = useState<string>(initialData?.meetupLat?.toString() || '');
+    const [meetupLng, setMeetupLng] = useState<string>(initialData?.meetupLng?.toString() || '');
     const [originalPrice, setOriginalPrice] = useState<string>(initialData?.originalPrice?.toString() || '');
     const [sellingPrice, setSellingPrice] = useState<string>(initialData?.sellingPrice?.toString() || '');
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -33,7 +36,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
 
         // Validation: Selling Price cannot be higher than Original Price
         if (type !== 'Recruiting' && op > 0 && sp > op) {
-            setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please reduce the selling price to offer a fair student discount.`);
+            setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please reduce the price to offer a student discount.`);
             return;
         }
 
@@ -64,6 +67,9 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
             sellerEmail: sellerEmail || undefined,
             sellerPhone: sellerPhone || undefined,
             deliveryMethod: type === 'Recruiting' ? undefined : deliveryMethod,
+            meetupLocationName: meetupLocationName || undefined,
+            meetupLat: meetupLat ? parseFloat(meetupLat) : undefined,
+            meetupLng: meetupLng ? parseFloat(meetupLng) : undefined,
             views: initialData?.views || 0,
             isSold: initialData?.isSold || false
         });
@@ -85,7 +91,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                 )}
 
                 <section className="form-section">
-                    <h3 className="section-title">1. Item Information</h3>
+                    <h3 className="section-title">1. Essential Item Information</h3>
                     <div className="form-group">
                         <label>Title</label>
                         <input
@@ -104,13 +110,13 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             placeholder="Describe condition, size, or specific requirements..."
-                            rows={3}
+                            rows={4}
                         />
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Society Association</label>
+                            <label>Society Category</label>
                             <select value={society} onChange={e => setSociety(e.target.value as SocietyName)}>
                                 {SOCIETIES.map(s => (
                                     <option key={s} value={s}>{s}</option>
@@ -157,26 +163,25 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                                     onChange={e => setSellingPrice(e.target.value)}
                                     placeholder="0.00"
                                 />
-                                <span className="field-hint">Must be less than or equal to original.</span>
+                                <span className="field-hint">Must be ≤ original price.</span>
                             </div>
                         </div>
                     ) : (
-                        <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>Pricing does not apply to recruiting posts.</p>
+                        <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: '1rem 0' }}>Pricing logic is disabled for recruiting posts.</p>
                     )}
 
                     <div className="form-row">
-                        {type !== 'Recruiting' && (
-                            <div className="form-group">
-                                <label>Delivery Method</label>
-                                <select value={deliveryMethod} onChange={e => setDeliveryMethod(e.target.value as any)}>
-                                    <option value="meetup">Meet up in person</option>
-                                    <option value="delivery">Post / Delivery</option>
-                                    <option value="both">Both Options</option>
-                                </select>
-                            </div>
-                        )}
                         <div className="form-group">
-                            <label>Item Image</label>
+                            <label>Preferred Meet-up Place</label>
+                            <input
+                                type="text"
+                                value={meetupLocationName}
+                                onChange={e => setMeetupLocationName(e.target.value)}
+                                placeholder="E.g. Engineering Library, Kings Buildings..."
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Item / Poster Image</label>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -185,12 +190,42 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                                     if (file) setImageFile(file);
                                 }}
                             />
-                            {(imageFile || initialData?.imageUrl) && (
-                                <p style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '0.25rem' }}>
-                                    ✅ {imageFile ? imageFile.name : 'Current image kept'}
-                                </p>
-                            )}
                         </div>
+                    </div>
+
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Meet-up Latitude (Optional)</label>
+                            <input
+                                type="number"
+                                step="any"
+                                value={meetupLat}
+                                onChange={e => setMeetupLat(e.target.value)}
+                                placeholder="55.922"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Meet-up Longitude (Optional)</label>
+                            <input
+                                type="number"
+                                step="any"
+                                value={meetupLng}
+                                onChange={e => setMeetupLng(e.target.value)}
+                                placeholder="-3.176"
+                            />
+                        </div>
+                    </div>
+                    <span className="field-hint" style={{ marginTop: '-1rem', display: 'block', marginBottom: '1.5rem' }}>
+                        Pin-point location data is enabled. Enter coordinates to show on map.
+                    </span>
+
+                    <div className="form-group">
+                        <label>Delivery Options</label>
+                        <select value={deliveryMethod} onChange={e => setDeliveryMethod(e.target.value as any)}>
+                            <option value="meetup">🤝 Meet up in person</option>
+                            <option value="delivery">🚚 Post / Delivery</option>
+                            <option value="both">🚚/🤝 Both Options</option>
+                        </select>
                     </div>
                 </section>
 
@@ -198,7 +233,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                     <h3 className="section-title">3. Contact Verification</h3>
                     <div className="form-row">
                         <div className="form-group">
-                            <label>University Email</label>
+                            <label>Verification Email</label>
                             <input
                                 type="email"
                                 required
@@ -208,7 +243,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                             />
                         </div>
                         <div className="form-group">
-                            <label>WhatsApp (Optional)</label>
+                            <label>WhatsApp / Mobile</label>
                             <input
                                 type="text"
                                 value={sellerPhone}
@@ -221,10 +256,10 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
 
                 <div className="form-actions">
                     <button type="button" className="btn btn-outline" onClick={onCancel} style={{ flex: 1 }}>
-                        Cancel
+                        Discard
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={uploading} style={{ flex: 2 }}>
-                        {uploading ? 'Processing listing...' : (initialData ? 'Save Changes' : 'Publish Listing')}
+                        {uploading ? 'Publishing gears...' : (initialData ? 'Update Verified Listing' : 'Publish to Marketplace')}
                     </button>
                 </div>
             </form>

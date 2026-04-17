@@ -49,71 +49,105 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
     const [sortOption, setSortOption] = useState('newest');
     const [filterSociety, setFilterSociety] = useState('all');
 
-    const topItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3);
-    const topItemIds = new Set(topItems.map(item => item.id));
-    let latestItems = items.filter(item => !topItemIds.has(item.id));
+    // 1. Partition Data
+    const hotItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
+    const recruitingItems = items.filter(i => i.type === 'Recruiting');
+    let standardItems = items.filter(i => i.type !== 'Recruiting');
 
+    // 2. Apply Filters & Sorting to standard items
     if (filterSociety !== 'all') {
-        latestItems = latestItems.filter(i => i.society === filterSociety);
+        standardItems = standardItems.filter(i => i.society === filterSociety);
     }
 
-    if (sortOption === 'price-low') latestItems.sort((a, b) => (a.sellingPrice || 0) - (b.sellingPrice || 0));
-    else if (sortOption === 'price-high') latestItems.sort((a, b) => (b.sellingPrice || 0) - (a.sellingPrice || 0));
-    else if (sortOption === 'a-z') latestItems.sort((a, b) => a.title.localeCompare(b.title));
+    const sortItems = (arr: MarketplaceItem[]) => {
+        const sorted = [...arr];
+        if (sortOption === 'price-low') sorted.sort((a, b) => (a.sellingPrice || 0) - (b.sellingPrice || 0));
+        else if (sortOption === 'price-high') sorted.sort((a, b) => (b.sellingPrice || 0) - (a.sellingPrice || 0));
+        else if (sortOption === 'a-z') sorted.sort((a, b) => a.title.localeCompare(b.title));
+        else sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return sorted;
+    };
+
+    const displayItems = sortItems(standardItems);
 
     return (
         <div className="feed-container">
             <HeroCarousel />
 
-            {topItems.length > 0 && (
+            {/* SECTION 1: HOT LISTINGS (SLIDER) */}
+            {hotItems.length > 0 && (
                 <div className="feed-section">
                     <div className="feed-header">
-                        <h2>Top Items 🔥</h2>
+                        <h2>Top Engineering Picks 🔥</h2>
                     </div>
-                    <div className="items-grid">
-                        {topItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                    <div className="slider-container">
+                        {hotItems.map((item) => (
+                            <div key={item.id} className="slider-item">
+                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                            </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            <div className="feed-section" style={{ marginTop: '2.5rem' }}>
-                <div className="feed-header" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h2>Latest Listings</h2>
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', background: '#f9fafb', padding: '1rem', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+            {/* SECTION 2: LATEST LISTINGS */}
+            <div className="feed-section">
+                <div className="feed-header" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <h2>Latest Marketplace</h2>
+                        <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Showing {displayItems.length} items</span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', background: '#fff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                         <div style={{ flex: 1, minWidth: '200px' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.4rem', fontWeight: 600, color: '#374151' }}>Filter by Society/Category</label>
-                            <select value={filterSociety} onChange={e => setFilterSociety(e.target.value)} style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%' }}>
-                                <option value="all">All Societies</option>
+                            <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase' }}>Society Category</label>
+                            <select value={filterSociety} onChange={e => setFilterSociety(e.target.value)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', outline: 'none', cursor: 'pointer' }}>
+                                <option value="all">All Specialties</option>
                                 <option value="Hyped">Hyped</option>
                                 <option value="HumanEd">HumanEd</option>
-                                <option value="Endeavour">Endeavour</option>
                                 <option value="Formula Student">Formula Student</option>
+                                <option value="CompSoc">CompSoc</option>
+                                <option value="Precious Plastic">Precious Plastic</option>
                             </select>
                         </div>
                         <div style={{ flex: 1, minWidth: '200px' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.4rem', fontWeight: 600, color: '#374151' }}>Sort Feed By</label>
-                            <select value={sortOption} onChange={e => setSortOption(e.target.value)} style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%' }}>
-                                <option value="newest">Latest Timestamp</option>
+                            <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase' }}>Shop Order</label>
+                            <select value={sortOption} onChange={e => setSortOption(e.target.value)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', outline: 'none', cursor: 'pointer' }}>
+                                <option value="newest">Recently Posted</option>
                                 <option value="price-low">Price: Low to High</option>
                                 <option value="price-high">Price: High to Low</option>
-                                <option value="a-z">Alphabetical (A - Z)</option>
+                                <option value="a-z">Name (A-Z)</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                {latestItems.length === 0 ? (
-                    <div className="empty-state">No items found.</div>
+                {displayItems.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', background: '#f9fafb', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
+                        <p style={{ color: '#6b7280', margin: 0 }}>No matching engineering gear found in this category.</p>
+                    </div>
                 ) : (
                     <div className="items-grid">
-                        {latestItems.map((item) => (
+                        {displayItems.map((item) => (
                             <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* SECTION 3: LATEST ROLES */}
+            {recruitingItems.length > 0 && (
+                <div className="feed-section" style={{ marginTop: '4rem' }}>
+                    <div className="feed-header">
+                        <h2>Society Recruitment & Roles 👥</h2>
+                    </div>
+                    <div className="items-grid">
+                        {recruitingItems.slice(0, 4).map((item) => (
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -169,7 +203,11 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
     };
 
     return (
-        <div className={`item-card ${item.isSold ? 'item-sold' : ''}`}>
+        <div
+            className={`item-card ${item.isSold ? 'item-sold' : ''}`}
+            onClick={() => navigate(`/item/${item.id}`)}
+            style={{ cursor: 'pointer' }}
+        >
             {item.imageUrl && (
                 <div className="item-image-container">
                     {item.isSold && <div className="sold-overlay">SOLD</div>}
@@ -226,7 +264,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
                 )}
             </div>
 
-            <div className="item-actions">
+            <div className="item-actions" onClick={e => e.stopPropagation()}>
                 {item.isSold ? (
                     <button className="btn btn-primary" disabled>
                         Item Unavailable
@@ -235,8 +273,8 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
                     <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                         <button
                             onClick={(e) => {
+                                e.stopPropagation();
                                 if (!isLoggedIn) {
-                                    e.preventDefault();
                                     alert("You must be signed in to message sellers.");
                                 } else {
                                     navigate('/inbox', {
@@ -255,7 +293,10 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport }: { item: Mar
                         {item.sellerPhone && (
                             <a
                                 href={isLoggedIn ? `https://wa.me/${item.sellerPhone.replace(/[^0-9]/g, '')}?text=Hi,%20I%27m%20interested%20in%20your%20${encodeURIComponent(item.title)}` : '#'}
-                                onClick={(e) => { if (!isLoggedIn) { e.preventDefault(); alert("You must be signed in to contact sellers."); } }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!isLoggedIn) { e.preventDefault(); alert("You must be signed in to contact sellers."); }
+                                }}
                                 className="btn btn-primary"
                                 style={{ flex: 1, textAlign: 'center', background: '#25D366', color: 'white', border: 'none' }}
                                 target="_blank"

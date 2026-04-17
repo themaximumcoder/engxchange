@@ -13,6 +13,7 @@ import { Profile } from './components/Profile';
 import { AdminDashboard } from './components/AdminDashboard';
 import { TermsPage, ContactPage, WorkWithUsPage } from './components/InfoPages';
 import { MessagesInbox } from './components/MessagesInbox';
+import { ItemDetails } from './components/ItemDetails';
 import { NotificationsPage } from './components/NotificationsPage';
 import { UpdatePassword } from './components/UpdatePassword';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
@@ -31,9 +32,13 @@ const mapItemFromDB = (row: any): MarketplaceItem => ({
   type: row.type,
   imageUrl: row.image_url,
   deliveryMethod: row.delivery_method,
+  meetupLocationName: row.meetup_location_name,
+  meetupLat: row.meetup_lat,
+  meetupLng: row.meetup_lng,
   sellerPhone: row.seller_phone,
   views: row.views,
-  createdAt: row.created_at
+  createdAt: row.created_at,
+  isSold: row.is_sold
 });
 
 const mapItemToDB = (item: any) => ({
@@ -44,8 +49,12 @@ const mapItemToDB = (item: any) => ({
   type: item.type,
   image_url: item.imageUrl,
   delivery_method: item.deliveryMethod,
+  meetup_location_name: item.meetupLocationName,
+  meetup_lat: item.meetupLat,
+  meetup_lng: item.meetupLng,
   seller_email: item.sellerEmail || 'student@ed.ac.uk',
-  seller_phone: item.sellerPhone
+  seller_phone: item.sellerPhone,
+  is_sold: item.isSold || false
 });
 
 const mapPostFromDB = (row: any): ForumPost => ({
@@ -428,6 +437,7 @@ function MainApp() {
       <main className="main-content container">
         <Routes>
           <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} />} />
+          <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
           <Route path="/list" element={
             <RequireAuth>
               <ListingForm

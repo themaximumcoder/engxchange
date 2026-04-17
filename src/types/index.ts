@@ -31,6 +31,9 @@ export interface MarketplaceItem {
     sellerEmail?: string;
     sellerPhone?: string;
     deliveryMethod?: 'delivery' | 'meetup' | 'both';
+    meetupLocationName?: string;
+    meetupLat?: number;
+    meetupLng?: number;
     views?: number;
     origin?: string;
     degree?: string;

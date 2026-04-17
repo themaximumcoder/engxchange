@@ -166,8 +166,6 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                     </div>
 
                     <div className="map-picker-container" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600 }}>Interactive Meetup Pin 📍</label>
-                    <div className="map-picker-container" style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '1rem', fontWeight: 600 }}>Meetup Location 📍</label>
                         
                         <div className="university-presets" style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>

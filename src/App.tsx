@@ -373,7 +373,20 @@ function MainApp() {
   const sendEmailNotification = async (to: string, sender: string, content: string) => {
     try {
       await supabase.functions.invoke('send-email', {
-        body: { to, sender, content }
+        body: { 
+          to, 
+          subject: `New Message from ${sender}`,
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2>New Message on engXchange</h2>
+              <p><strong>From:</strong> ${sender}</p>
+              <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                ${content}
+              </div>
+              <p>Reply to this message on the <a href="https://engxchange.com/inbox">engXchange Inbox</a>.</p>
+            </div>
+          `
+        }
       });
     } catch (err) {
       console.error('Email notification failed:', err);

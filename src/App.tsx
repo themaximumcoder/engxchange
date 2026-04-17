@@ -21,6 +21,7 @@ import type { MarketplaceItem, ForumPost, Comment, Message, Notification, Projec
 import { supabase } from './lib/supabaseClient';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import type { Session, RealtimeChannel } from '@supabase/supabase-js';
+import { Analytics } from "@vercel/analytics/react";
 import './App.css';
 
 const RequireAuth = ({ session, children }: { session: Session | null, children: React.ReactNode }) => {
@@ -469,6 +470,7 @@ function MainApp() {
           <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>👤</div>
         </nav>
       )}
+      <Analytics />
     </div>
   );
 }

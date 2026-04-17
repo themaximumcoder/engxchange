@@ -20,16 +20,17 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
                 if (!res.ok) throw new Error('API unreachable');
                 const data = await res.json();
                 if (active) {
-                    const uniqueNames = Array.from(new Set<string>(data.map((u: any) => u.name as string)));
+                    const uniqueNames = Array.from(new Set<string>(data.map((u: { name: string }) => u.name)));
                     uniqueNames.sort((a, b) => a.localeCompare(b));
                     const mapped = uniqueNames.map(name => ({ name }));
                     setUniversities(mapped);
                     if (mapped.length > 0) setSelectedUni(mapped[0].name);
                     setLoading(false);
                 }
-            } catch (err) {
+            } catch (err: unknown) {
                 if (active) {
                     console.error("Failed to fetch universities API, using internal list", err);
+                    // ... (rest of catch block)
                     // Robust static fallback for major UK engineering schools
                     const fallbackUnis = [
                         'University of Edinburgh',
@@ -95,9 +96,9 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
 
             alert('Registration complete! Please check your email to verify your account before logging in.');
             onComplete();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Registration Error:', err);
-            alert('Registration failed: ' + err.message);
+            alert('Registration failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setLoading(false);
         }

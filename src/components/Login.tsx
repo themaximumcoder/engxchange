@@ -22,8 +22,8 @@ export function Login({ onLoginSuccess }: { onLoginSuccess: () => void }) {
             });
             if (error) throw error;
             onLoginSuccess();
-        } catch (err: any) {
-            alert('Login failed: ' + err.message);
+        } catch (err: unknown) {
+            alert('Login failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setLoading(false);
         }

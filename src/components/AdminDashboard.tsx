@@ -1,20 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import type { MarketplaceItem, Report } from '../types';
 
-export function AdminDashboard({ items = [], reports: _propReports = [] }: { items?: any[], reports?: any[] }) {
+interface AdminStats {
+    items: number;
+    posts: number;
+    usersTotal: number;
+    usersToday: number;
+}
+
+export function AdminDashboard({ items = [] }: { items?: MarketplaceItem[] }) {
     console.log(`Admin context: handling ${items.length} marketplace items.`);
-    const [reports, setReports] = useState<any[]>([]);
-    const [stats, setStats] = useState({ items: 0, posts: 0, usersTotal: 0, usersToday: 0 });
+    const [reports, setReports] = useState<Report[]>([]);
+    const [stats, setStats] = useState<AdminStats>({ items: 0, posts: 0, usersTotal: 0, usersToday: 0 });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadReports();
-    }, []);
-
-    const loadReports = async () => {
-        setLoading(true);
+    const loadReports = useCallback(async () => {
         const { data } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-        if (data) setReports(data);
+        if (data) setReports(data as Report[]);
 
         // Fetch highly efficient DB aggregate counts dynamically
         const today = new Date();
@@ -35,7 +38,13 @@ export function AdminDashboard({ items = [], reports: _propReports = [] }: { ite
         });
 
         setLoading(false);
-    };
+    }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            loadReports();
+        }, 0);
+    }, [loadReports]);
 
     const handleDeleteContent = async (reportId: string, itemId: string, itemType: string) => {
         if (!window.confirm('Are you absolutely sure you want to permanently delete this content from the database?')) return;

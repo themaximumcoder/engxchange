@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import type { ForumPost, Comment } from '../types';
+import type { ForumPost, Comment, Project } from '../types';
 import { CommentSection } from './CommentSection';
 import { STLViewer } from './STLViewer';
 
-export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, onFriendRequest, currentUserEmail, onReport }: { posts: ForumPost[], projects?: any[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, onFriendRequest: (email: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void }) {
+export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, onFriendRequest, currentUserEmail, onReport }: { posts: ForumPost[], projects?: Project[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, onFriendRequest: (email: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void }) {
     const [friends, setFriends] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'questions' | 'projects'>('questions');
 

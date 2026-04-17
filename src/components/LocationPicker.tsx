@@ -27,7 +27,7 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
     });
 
 
-    const handleMapClick = useCallback((ev: any) => {
+    const handleMapClick = useCallback((ev: { detail: { latLng: { lat: number; lng: number } } }) => {
         if (readOnly) return;
         const newLat = ev.detail.latLng.lat;
         const newLng = ev.detail.latLng.lng;

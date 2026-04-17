@@ -86,6 +86,24 @@ export interface Notification {
     createdAt: string;
 }
 
+export interface Report {
+    id: string;
+    item_id: string;
+    item_type: 'item' | 'post' | 'comment';
+    reported_by: string;
+    reason: string;
+    created_at: string;
+}
+
+export interface Project {
+    id: string;
+    user_email: string;
+    title: string;
+    description: string;
+    image_url?: string;
+    created_at: string;
+}
+
 export const SOCIETIES: SocietyName[] = [
     'Hyped',
     'HumanEd',

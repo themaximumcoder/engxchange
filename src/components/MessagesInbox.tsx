@@ -17,11 +17,14 @@ export function MessagesInbox({
 
     useEffect(() => {
         if (location.state?.newContact) {
-            setSelectedContact(location.state.newContact);
-            if (location.state?.draftMessage) {
-                setDraft(location.state.draftMessage);
-            }
-            window.history.replaceState({}, document.title);
+            const { newContact, draftMessage } = location.state;
+            setTimeout(() => {
+                setSelectedContact(newContact);
+                if (draftMessage) {
+                    setDraft(draftMessage);
+                }
+                window.history.replaceState({}, document.title);
+            }, 0);
         }
     }, [location.state]);
 

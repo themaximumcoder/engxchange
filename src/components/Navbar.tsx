@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import type { Notification } from '../types';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -7,7 +8,7 @@ interface NavbarProps {
     onSearchChange: (query: string) => void;
     onLogoutClick: () => void;
     suggestions?: string[];
-    notifications?: any[];
+    notifications?: Notification[];
     avatarUrl?: string;
 }
 

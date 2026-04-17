@@ -17,32 +17,38 @@ import { ItemDetails } from './components/ItemDetails';
 import { NotificationsPage } from './components/NotificationsPage';
 import { UpdatePassword } from './components/UpdatePassword';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
-import type { MarketplaceItem, ForumPost, Comment, Message, Notification } from './types';
+import type { MarketplaceItem, ForumPost, Comment, Message, Notification, Project, SocietyName, EntryType } from './types';
 import { supabase } from './lib/supabaseClient';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import type { Session, RealtimeChannel } from '@supabase/supabase-js';
 import './App.css';
 
-const mapItemFromDB = (row: any): MarketplaceItem => ({
-  id: row.id,
-  title: row.title,
-  description: row.description,
-  sellingPrice: row.price,
-  originalPrice: row.original_price,
-  sellerEmail: row.seller_email,
-  society: row.society,
-  type: row.type,
-  imageUrl: row.image_url,
-  deliveryMethod: row.delivery_method,
-  meetupLocationName: row.meetup_location_name,
-  meetupLat: row.meetup_lat,
-  meetupLng: row.meetup_lng,
-  sellerPhone: row.seller_phone,
-  views: row.views,
-  createdAt: row.created_at,
-  isSold: row.is_sold
+const RequireAuth = ({ session, children }: { session: Session | null, children: React.ReactNode }) => {
+  if (!session) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+
+const mapItemFromDB = (row: Record<string, unknown>): MarketplaceItem => ({
+  id: row.id as string,
+  title: row.title as string,
+  description: row.description as string,
+  sellingPrice: row.price as number | undefined,
+  originalPrice: row.original_price as number | undefined,
+  sellerEmail: row.seller_email as string | undefined,
+  society: row.society as SocietyName,
+  type: row.type as EntryType,
+  imageUrl: row.image_url as string | undefined,
+  deliveryMethod: row.delivery_method as "delivery" | "meetup" | "both" | undefined,
+  meetupLocationName: row.meetup_location_name as string | undefined,
+  meetupLat: row.meetup_lat as number | undefined,
+  meetupLng: row.meetup_lng as number | undefined,
+  sellerPhone: row.seller_phone as string | undefined,
+  views: row.views as number | undefined,
+  createdAt: row.created_at as string,
+  isSold: row.is_sold as boolean | undefined
 });
 
-const mapItemToDB = (item: any) => ({
+const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
   title: item.title,
   description: item.description,
   price: item.sellingPrice,
@@ -58,20 +64,20 @@ const mapItemToDB = (item: any) => ({
   is_sold: item.isSold || false
 });
 
-const mapPostFromDB = (row: any): ForumPost => ({
-  id: row.id,
-  authorEmail: row.author_email,
-  title: row.title,
-  content: row.content,
-  imageUrl: row.image_url,
-  stlFileName: row.stl_file_name,
-  stlFileUrl: row.stl_file_url,
-  upvotes: row.upvotes,
-  createdAt: row.created_at,
+const mapPostFromDB = (row: Record<string, unknown>): ForumPost => ({
+  id: row.id as string,
+  authorEmail: row.author_email as string,
+  title: row.title as string,
+  content: row.content as string,
+  imageUrl: row.image_url as string | undefined,
+  stlFileName: row.stl_file_name as string | undefined,
+  stlFileUrl: row.stl_file_url as string | undefined,
+  upvotes: row.upvotes as number,
+  createdAt: row.created_at as string,
   tags: row.tags ? String(row.tags).split(',').map(t => t.trim()) : undefined
 });
 
-const mapPostToDB = (post: any) => ({
+const mapPostToDB = (post: Partial<ForumPost>) => ({
   author_email: post.authorEmail,
   title: post.title,
   content: post.content,
@@ -96,11 +102,11 @@ function MainApp() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
-  const [globalProjects, setGlobalProjects] = useState<any[]>([]);
+  const [globalProjects, setGlobalProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -108,12 +114,12 @@ function MainApp() {
       const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });
 
       const { data: uData } = await supabase.from('users').select('email, university, degree, year_of_study, points');
-      const userMap = new Map(uData?.map((u: any) => [u.email, { uni: u.university, deg: u.degree, yr: u.year_of_study, pts: u.points || 0 }]) || []);
+      const userMap = new Map(uData?.map((u: Record<string, unknown>) => [u.email as string, { uni: u.university as string, deg: u.degree as string, yr: u.year_of_study as string, pts: (u.points as number) || 0 }]) || []);
 
       if (active && iData) {
         setItems(iData.map(row => {
           const item = mapItemFromDB(row);
-          const u = userMap.get(item.sellerEmail);
+          const u = userMap.get(item.sellerEmail || '');
           item.origin = u?.uni || '';
           item.degree = u?.deg || '';
           item.yearOfStudy = u?.yr || '';
@@ -126,24 +132,24 @@ function MainApp() {
       if (active && pData) {
         setPosts(pData.map(row => {
           const post = mapPostFromDB(row);
-          const u = userMap.get(post.authorEmail);
+          const u = userMap.get(post.authorEmail || '');
           post.origin = u?.uni || '';
           post.degree = u?.deg || '';
           post.yearOfStudy = u?.yr || '';
           post.points = u?.pts || 0;
-          return post;
+          return post as ForumPost;
         }));
       }
 
       const { data: cData } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
       if (active && cData) {
-        setComments(cData.map((row: any) => ({
-          id: row.id,
-          postId: row.post_id,
-          authorEmail: row.author_email,
-          content: row.content,
-          createdAt: row.created_at,
-          points: userMap.get(row.author_email)?.pts || 0
+        setComments(cData.map((row: Record<string, unknown>) => ({
+          id: row.id as string,
+          postId: row.post_id as string,
+          authorEmail: row.author_email as string,
+          content: row.content as string,
+          createdAt: row.created_at as string,
+          points: (userMap.get(row.author_email as string)?.pts as number) || 0
         })));
       }
 
@@ -179,8 +185,8 @@ function MainApp() {
 
   useEffect(() => {
     let active = true;
-    let msgSub: any = null;
-    let notifSub: any = null;
+    let msgSub: RealtimeChannel | null = null;
+    let notifSub: RealtimeChannel | null = null;
 
     const fetchPrivates = async () => {
       if (!session?.user?.email) return;
@@ -190,8 +196,8 @@ function MainApp() {
 
       const { data: nData } = await supabase.from('notifications').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
       if (active && nData) {
-        setNotifications(nData.map((r: any) => ({
-          id: r.id, userEmail: r.user_email, type: r.type, message: r.message, read: r.read, createdAt: r.created_at
+        setNotifications(nData.map((r: Record<string, unknown>) => ({
+          id: r.id as string, userEmail: r.user_email as string, type: r.type as string, message: r.message as string, read: r.read as boolean, createdAt: r.created_at as string
         })));
       }
 
@@ -200,8 +206,8 @@ function MainApp() {
         .or(`sender_email.eq.${session.user.email},receiver_email.eq.${session.user.email}`)
         .order('created_at', { ascending: true });
       if (active && mData) {
-        setMessages(mData.map((r: any) => ({
-          id: r.id, senderEmail: r.sender_email, receiverEmail: r.receiver_email, content: r.content, read: r.read, createdAt: r.created_at
+        setMessages(mData.map((r: Record<string, unknown>) => ({
+          id: r.id as string, senderEmail: r.sender_email as string, receiverEmail: r.receiver_email as string, content: r.content as string, read: r.read as boolean, createdAt: r.created_at as string
         })));
       }
 
@@ -210,7 +216,7 @@ function MainApp() {
           const r = payload.new;
           if (r.sender_email === session.user.email || r.receiver_email === session.user.email) {
             setMessages(prev => [...prev.filter(m => m.id !== r.id), {
-              id: r.id, senderEmail: r.sender_email, receiverEmail: r.receiver_email, content: r.content, read: r.read, createdAt: r.created_at
+              id: r.id as string, senderEmail: r.sender_email as string, receiverEmail: r.receiver_email as string, content: r.content as string, read: r.read as boolean, createdAt: r.created_at as string
             }]);
           }
         }).subscribe();
@@ -311,8 +317,8 @@ function MainApp() {
   const handleVote = async (postId: string, delta: number) => {
     if (!session?.user?.id) { alert('Please log in.'); navigate('/login'); return; }
     const currentVote = userVotes[postId] || 0;
-    let newDelta = currentVote === delta ? -delta : delta - currentVote;
-    let finalVoteStatus = currentVote === delta ? 0 : delta;
+    const newDelta = currentVote === delta ? -delta : delta - currentVote;
+    const finalVoteStatus = currentVote === delta ? 0 : delta;
 
     if (delta > 0) new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3').play().catch(() => { });
     else new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3').play().catch(() => { });
@@ -411,10 +417,6 @@ function MainApp() {
     p.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-    if (!session) return <Navigate to="/login" replace />;
-    return <>{children}</>;
-  };
 
   return (
     <div className="app-container">
@@ -438,16 +440,16 @@ function MainApp() {
           <Routes>
             <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} />} />
             <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
-            <Route path="/list" element={<RequireAuth><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail } as any} /></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
-            <Route path="/inbox" element={<RequireAuth><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
-            <Route path="/notifications" element={<RequireAuth><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
+            <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
+            <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
             <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
-            <Route path="/create-post" element={<RequireAuth><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
+            <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
             <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
             <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
-            <Route path="/profile" element={<RequireAuth><Profile session={session} /></RequireAuth>} />
-            <Route path="/admin" element={<RequireAuth>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} reports={[]} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
+            <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/contact" element={<ContactPage />} />

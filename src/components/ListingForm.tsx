@@ -9,7 +9,7 @@ import './ListingForm.css';
 interface ListingFormProps {
     onSubmit: (item: Omit<MarketplaceItem, 'id' | 'createdAt'>) => void;
     onCancel: () => void;
-    initialData?: MarketplaceItem;
+    initialData?: Partial<MarketplaceItem>;
 }
 
 export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProps) {
@@ -153,7 +153,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                 <Truck size={16} /> Delivery Method
                             </label>
-                            <select value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as any)}>
+                            <select value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as 'delivery' | 'meetup' | 'both')}>
                                 <option value="meetup">Meet up only</option>
                                 <option value="delivery">Delivery only</option>
                                 <option value="both">Both available</option>

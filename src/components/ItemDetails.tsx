@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
@@ -7,12 +6,7 @@ import './ItemDetails.css';
 export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], isLoggedIn: boolean }) {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [item, setItem] = useState<MarketplaceItem | null>(null);
-
-    useEffect(() => {
-        const found = items.find(i => i.id === id);
-        if (found) setItem(found);
-    }, [id, items]);
+    const item = items.find(i => i.id === id);
 
     if (!item) return <div style={{ padding: '4rem', textAlign: 'center' }}><h2>Item not found</h2><button className="btn btn-outline" onClick={() => navigate('/')}>Back to Feed</button></div>;
 

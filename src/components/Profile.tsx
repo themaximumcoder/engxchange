@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import type { Session } from '@supabase/supabase-js';
+import type { Project } from '../types';
 
-export function Profile({ session }: { session: any }) {
+export function Profile({ session }: { session: Session | null }) {
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState('');
     const [university, setUniversity] = useState('');
@@ -12,7 +14,7 @@ export function Profile({ session }: { session: any }) {
     const [universities, setUniversities] = useState<string[]>([]);
     const [fetchingUnis, setFetchingUnis] = useState(true);
 
-    const [projects, setProjects] = useState<any[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [projectTitle, setProjectTitle] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [projectImage, setProjectImage] = useState<File | null>(null);
@@ -44,7 +46,7 @@ export function Profile({ session }: { session: any }) {
         const loadProjects = async () => {
             if (!session?.user?.id) return;
             const { data } = await supabase.from('projects').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
-            if (active && data) setProjects(data);
+            if (active && data) setProjects(data as Project[]);
         };
 
         const fetchUnis = async () => {
@@ -52,12 +54,12 @@ export function Profile({ session }: { session: any }) {
                 const res = await fetch('https://universities.hipolabs.com/search?country=United+Kingdom');
                 const data = await res.json();
                 if (active) {
-                    const uniqueNames = Array.from(new Set<string>(data.map((u: any) => u.name as string)));
+                    const uniqueNames = Array.from(new Set<string>(data.map((u: { name: string }) => u.name as string)));
                     uniqueNames.sort((a, b) => a.localeCompare(b));
                     setUniversities(['University of Edinburgh', ...uniqueNames.filter(n => n !== 'University of Edinburgh')]);
                     setFetchingUnis(false);
                 }
-            } catch (err) {
+            } catch {
                 if (active) {
                     setUniversities(['University of Edinburgh', 'Heriot-Watt University', 'Edinburgh Napier University']);
                     setFetchingUnis(false);
@@ -75,12 +77,13 @@ export function Profile({ session }: { session: any }) {
         e.preventDefault();
         setLoading(true);
         try {
+            if (!session?.user?.id) throw new Error('No active session.');
             const updates = { username, university, degree, year_of_study: yearOfStudy, profile_picture_url: profilePictureUrl };
             const { error } = await supabase.from('users').update(updates).eq('id', session.user.id);
             if (error) throw error;
             alert('Profile configuration locked and updated successfully!');
-        } catch (error: any) {
-            alert('Error updating profile: ' + error.message);
+        } catch (error: unknown) {
+            alert('Error updating profile: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setLoading(false);
         }
@@ -88,6 +91,7 @@ export function Profile({ session }: { session: any }) {
 
     const handleAddProject = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!session?.user?.email) return;
         setUploadingProject(true);
         try {
             let imageUrl = '';
@@ -114,10 +118,10 @@ export function Profile({ session }: { session: any }) {
             setProjectTitle(''); setProjectDesc(''); setProjectImage(null);
 
             const { data } = await supabase.from('projects').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
-            if (data) setProjects(data);
+            if (data) setProjects(data as Project[]);
 
-        } catch (err: any) {
-            alert('Engine error processing upload: ' + err.message);
+        } catch (err: unknown) {
+            alert('Engine error processing upload: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
         setUploadingProject(false);
     };
@@ -146,7 +150,7 @@ export function Profile({ session }: { session: any }) {
                         )}
                         <input type="file" accept="image/*" onChange={async (e) => {
                             const file = e.target.files?.[0];
-                            if (!file) return;
+                            if (!file || !session) return;
                             setLoading(true);
                             try {
                                 const ext = file.name.split('.').pop();
@@ -158,8 +162,8 @@ export function Profile({ session }: { session: any }) {
                                 setProfilePictureUrl(publicUrl);
                                 await supabase.from('users').update({ profile_picture_url: publicUrl }).eq('id', session.user.id);
                                 alert('Profile picture dynamically uploaded and synced securely to your Identity!');
-                            } catch (err: any) {
-                                alert('Failed to completely upload avatar payload constraints: ' + err.message);
+                            } catch (err: unknown) {
+                                alert('Failed to completely upload avatar payload constraints: ' + (err instanceof Error ? err.message : 'Unknown error'));
                             } finally {
                                 setLoading(false);
                             }

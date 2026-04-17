@@ -67,7 +67,20 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
 
         setLoading(true);
         try {
-            // Securely create the user Auth credential
+            // 1. Proactively check if email already exists in our public users table
+            const { data: existingUser } = await supabase
+                .from('users')
+                .select('email')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (existingUser) {
+                alert('This email is already registered. Please log in or use a different university email.');
+                setLoading(false);
+                return;
+            }
+
+            // 2. Securely create the user Auth credential
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email, password
             });

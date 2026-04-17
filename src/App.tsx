@@ -25,6 +25,8 @@ const mapItemFromDB = (row: any): MarketplaceItem => ({
   title: row.title,
   description: row.description,
   sellingPrice: row.price,
+  originalPrice: row.original_price,
+  sellerEmail: row.seller_email,
   society: row.society,
   type: row.type,
   imageUrl: row.image_url,

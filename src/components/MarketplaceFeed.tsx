@@ -237,20 +237,24 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                 boxShadow: isHovered ? '0 12px 20px -10px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.1)'
             }}
         >
-            {item.imageUrl && (
-                <div className="item-image-container">
-                    {item.isSold && <div className="sold-overlay">SOLD</div>}
+            <div className="item-image-container">
+                {item.isSold && <div className="sold-overlay">SOLD</div>}
+                {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.title} className="item-image" />
-                    <button
-                        className="like-heart-button"
-                        onClick={(e) => { e.stopPropagation(); onLikeItem(item.id); }}
-                        title="I'm interested!"
-                        style={{ color: isSaved ? '#ef4444' : '#d1d5db', transform: isSaved ? 'scale(1.1)' : 'scale(1)' }}
-                    >
-                        {isSaved ? '❤️' : '🤍'}
-                    </button>
-                </div>
-            )}
+                ) : (
+                    <div className="placeholder-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', color: '#94a3b8' }}>
+                        <span style={{ fontSize: '2rem' }}>📦</span>
+                    </div>
+                )}
+                <button
+                    className="like-heart-button"
+                    onClick={(e) => { e.stopPropagation(); onLikeItem(item.id); }}
+                    title="I'm interested!"
+                    style={{ color: isSaved ? '#ef4444' : '#d1d5db', transform: isSaved ? 'scale(1.1)' : 'scale(1)' }}
+                >
+                    {isSaved ? '❤️' : '🤍'}
+                </button>
+            </div>
             {!item.imageUrl && item.isSold && (
                 <div className="sold-banner">SOLD</div>
             )}
@@ -266,7 +270,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                 {renderDeliveryBadge()}
             </div>
 
-            <div className="item-body">
+            <div className="item-body" style={{ flexGrow: 1 }}>
                 <h3 className="item-title">{item.title}</h3>
                 <small style={{ color: '#888', display: 'block', marginBottom: '8px' }}>
                     By {sellerUsername} &bull; {getTimeAgo(item.createdAt)}

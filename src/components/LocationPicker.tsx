@@ -109,7 +109,7 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
 
     return (
         <div style={{ height: '350px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
-            <APIProvider apiKey={API_KEY}>
+            <APIProvider apiKey={API_KEY} libraries={['places']}>
                 {!readOnly && <AutocompleteCustom onPlaceSelect={handlePlaceSelect} />}
                 <Map
                     center={markerLocation}

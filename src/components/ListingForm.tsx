@@ -80,7 +80,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
     return (
         <div className="form-container">
             <div className="form-header">
-                <h2>{initialData ? 'Update Listing' : 'List an Item or Role'}</h2>
+                <h2>{initialData?.id ? 'Update Listing' : 'List an Item or Role'}</h2>
                 <p>Provide the details below. We enforce fair student pricing.</p>
             </div>
 

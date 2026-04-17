@@ -25,12 +25,13 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
 
     return (
         <nav className="navbar" style={{ height: '80px' }}>
-            <div className="container nav-container">
-                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+            <div className="container nav-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '1rem' }}>
+                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', marginRight: '1rem' }}>
                     <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '54px', objectFit: 'contain' }} />
                 </Link>
-                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, justifyContent: 'flex-end' }}>
-                    <div className="search-group" style={{ display: 'flex', gap: '0.5rem', flex: 1, maxWidth: '650px', marginLeft: '1rem' }}>
+
+                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1 }}>
+                    <div className="search-group" style={{ display: 'flex', gap: '0.5rem', flex: 1, maxWidth: '650px' }}>
                         <input
                             type="text"
                             list="search-suggestions"
@@ -57,46 +58,43 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                             </datalist>
                         )}
                     </div>
-                    {!isLoggedIn ? (
-                        <>
-                            <button className="btn btn-outline" onClick={() => navigate('/login')}>Log In</button>
-                            <button className="btn btn-outline" onClick={() => navigate('/register')} style={{ borderColor: '#6366f1', color: '#6366f1', fontWeight: 'bold' }}>Sign Up</button>
-                        </>
-                    ) : (
-                        <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} style={{ width: '42px', height: '42px', borderRadius: '50%', cursor: 'pointer', objectFit: 'cover', border: '2px solid #2563eb', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
-                            ) : (
-                                <button className="btn btn-outline" onClick={() => navigate('/profile')} style={{ color: '#2563eb', borderColor: '#2563eb' }}>Profile</button>
+
+                    <div className="nav-right-group" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginLeft: 'auto' }}>
+                        <div className="nav-links-desktop" style={{ display: 'flex', gap: '1rem', alignItems: 'center', borderRight: '1px solid #e5e7eb', paddingRight: '1rem' }}>
+                            <Link to="/forum" className="nav-link-secondary">Community</Link>
+                            {isLoggedIn && (
+                                <>
+                                    <Link to="/inbox" className="nav-link-secondary" style={{ color: '#10b981' }}>Messages</Link>
+                                    <Link to="/dashboard" className="nav-link-secondary">Dashboard</Link>
+                                </>
                             )}
-                            <button className="btn btn-outline" onClick={onLogoutClick} style={{ color: '#ef4444', borderColor: '#ef4444' }}>Sign Out</button>
-
-                            <div style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/notifications')}>
-                                <span style={{ fontSize: '1.5rem' }}>🔔</span>
-                                {notifications.filter(n => !n.read).length > 0 && (
-                                    <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold', padding: '0.1rem 0.4rem', borderRadius: '50%' }}>
-                                        {notifications.filter(n => !n.read).length}
-                                    </span>
-                                )}
-                            </div>
                         </div>
-                    )}
 
-                    <div className="desktop-nav-group" style={{ display: 'flex', gap: '0.75rem', borderLeft: '1px solid #e5e7eb', paddingLeft: '1rem', marginLeft: '0.5rem' }}>
-                        <Link to="/forum" className="nav-link-secondary" title="Community Forum">
-                             Community
-                        </Link>
-                        {isLoggedIn && (
-                            <>
-                                <Link to="/inbox" className="nav-link-secondary" style={{ color: '#10b981' }} title="Private Messages">
-                                    Messages
-                                </Link>
-                                <Link to="/dashboard" className="nav-link-secondary" title="My Dashboard">
-                                    Dashboard
-                                </Link>
-                            </>
+                        {!isLoggedIn ? (
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn btn-outline" onClick={() => navigate('/login')}>Log In</button>
+                                <button className="btn btn-outline" onClick={() => navigate('/register')} style={{ borderColor: '#6366f1', color: '#6366f1', fontWeight: 'bold' }}>Sign Up</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/notifications')}>
+                                    <span style={{ fontSize: '1.4rem' }}>🔔</span>
+                                    {notifications.filter(n => !n.read).length > 0 && (
+                                        <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '0.1rem 0.35rem', borderRadius: '50%' }}>
+                                            {notifications.filter(n => !n.read).length}
+                                        </span>
+                                    )}
+                                </div>
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} style={{ width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer', objectFit: 'cover', border: '2px solid #2563eb' }} />
+                                ) : (
+                                    <button className="btn btn-outline" onClick={() => navigate('/profile')} style={{ color: '#2563eb', borderColor: '#2563eb', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Profile</button>
+                                )}
+                                <button className="btn btn-outline" onClick={onLogoutClick} style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Sign Out</button>
+                            </div>
                         )}
-                        <Link to="/list" className="btn btn-primary" style={{ textDecoration: 'none', marginLeft: '0.5rem', padding: '0.4rem 1rem' }}>
+
+                        <Link to="/list" className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.6rem 1.2rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                             List an Item
                         </Link>
                     </div>

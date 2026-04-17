@@ -187,6 +187,9 @@ function getTimeAgo(dateString: string): string {
 
 function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void }) {
     const navigate = useNavigate();
+    const [isHovered, setIsHovered] = useState(false);
+    const isRecruit = item.type === 'Recruiting';
+    
     const YEAR_COLORS: Record<string, string> = {
         'Year 1': '#9ca3af',
         'Year 2': '#10b981',
@@ -221,7 +224,15 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
         <div
             className={`item-card ${item.isSold ? 'item-sold' : ''}`}
             onClick={() => navigate(`/item/${item.id}`)}
-            style={{ cursor: 'pointer' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ 
+                cursor: 'pointer',
+                background: (isRecruit && isHovered) ? '#fee2e2' : undefined,
+                transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: isHovered ? '0 12px 20px -10px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.1)'
+            }}
         >
             {item.imageUrl && (
                 <div className="item-image-container">

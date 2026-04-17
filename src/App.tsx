@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
 import { ListingForm } from './components/ListingForm';
@@ -80,6 +80,14 @@ const mapPostToDB = (post: any) => ({
   stl_file_url: post.stlFileUrl,
   tags: post.tags ? post.tags.join(',') : null
 });
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function MainApp() {
   const navigate = useNavigate();
@@ -467,6 +475,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
+        <ScrollToTop />
         <MainApp />
       </Router>
     </HelmetProvider>

@@ -306,7 +306,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (!isLoggedIn) {
-                                    alert("You must be signed in to message sellers.");
+                                    console.error("Auth Guard: Sign-in required for messaging.");
                                 } else {
                                     navigate('/inbox', {
                                         state: {

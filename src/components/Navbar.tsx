@@ -23,11 +23,17 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
         <nav className="navbar">
             <div className="container nav-container">
                 <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="engXchange Logo" style={{ height: '42px', objectFit: 'contain' }} />
-                    <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em', display: 'flex', fontFamily: '"Inter", sans-serif' }}>
-                        <span style={{ color: '#000000' }}>Engineering</span>
-                        <span style={{ color: '#ef4444', marginLeft: '0.2rem' }}>Exchange</span>
-                    </span>
+                    {location.pathname === '/' ? (
+                        <img src="/logo_custom.png" alt="engXchange Logo" style={{ height: '70px', objectFit: 'contain' }} />
+                    ) : (
+                        <>
+                            <img src="/logo.png" alt="engXchange Logo" style={{ height: '42px', objectFit: 'contain' }} />
+                            <span style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em', display: 'flex', fontFamily: '"Inter", sans-serif' }}>
+                                <span style={{ color: '#000000' }}>Engineering</span>
+                                <span style={{ color: '#ef4444', marginLeft: '0.2rem' }}>Exchange</span>
+                            </span>
+                        </>
+                    )}
                 </Link>
                 <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>

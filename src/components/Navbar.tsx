@@ -30,7 +30,7 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                     <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '112px', objectFit: 'contain' }} />
                 </Link>
 
-                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, overflow: 'hidden' }}>
+                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
                     <div className="search-group" style={{ display: 'flex', gap: '0.5rem', flex: 1, maxWidth: '480px' }}>
                         <input
                             type="text"

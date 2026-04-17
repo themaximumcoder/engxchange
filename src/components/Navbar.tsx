@@ -10,9 +10,12 @@ interface NavbarProps {
     suggestions?: string[];
     notifications?: Notification[];
     avatarUrl?: string;
+    locationFilter?: string;
+    onLocationFilterChange?: (loc: string) => void;
+    availableLocations?: string[];
 }
 
-export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl }: NavbarProps) {
+export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl, locationFilter, onLocationFilterChange, availableLocations }: NavbarProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -21,25 +24,31 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
     const placeholderText = isForum ? "Search forum conversations..." : "Search items for sale...";
 
     return (
-        <nav className="navbar">
+        <nav className="navbar" style={{ height: '80px' }}>
             <div className="container nav-container">
-                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '48px', objectFit: 'contain' }} />
-                    <span className="brand-text-container" style={{ fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em', display: 'flex', fontFamily: '"Inter", sans-serif' }}>
-                        <span style={{ color: '#000000' }}>Engineering</span>
-                        <span style={{ color: '#ef4444', marginLeft: '0.2rem' }}>Exchange</span>
-                    </span>
+                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '54px', objectFit: 'contain' }} />
                 </Link>
-                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, justifyContent: 'flex-end' }}>
+                    <div className="search-group" style={{ display: 'flex', gap: '0.5rem', flex: 1, maxWidth: '650px', marginLeft: '1rem' }}>
                         <input
                             type="text"
                             list="search-suggestions"
                             placeholder={placeholderText}
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', maxWidth: '300px', minWidth: '150px', fontSize: '1rem', color: '#374151' }}
+                            style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2, minWidth: '150px', fontSize: '1rem', color: '#374151', outline: 'none' }}
                         />
+                        {availableLocations && availableLocations.length > 0 && (
+                            <select
+                                value={locationFilter}
+                                onChange={(e) => onLocationFilterChange?.(e.target.value)}
+                                style={{ padding: '0.65rem', borderRadius: '8px', border: '1px solid #d1d5db', flex: 1, maxWidth: '200px', fontSize: '0.9rem', color: '#374151', cursor: 'pointer', outline: 'none', background: '#fff' }}
+                            >
+                                <option value="all">All Locations</option>
+                                {availableLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                            </select>
+                        )}
                         {suggestions && suggestions.length > 0 && (
                             <datalist id="search-suggestions">
                                 {Array.from(new Set(suggestions)).map((s, idx) => (

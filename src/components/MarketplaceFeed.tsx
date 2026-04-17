@@ -9,6 +9,7 @@ interface MarketplaceFeedProps {
     isLoggedIn?: boolean;
     onReport?: (id: string, type: string, reason: string) => void;
     onLikeItem: (id: string) => void;
+    locationFilter?: string;
 }
 
 const NEWS_SLIDES = [
@@ -46,9 +47,8 @@ function HeroCarousel() {
     );
 }
 
-export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem }: MarketplaceFeedProps) {
+export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all' }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
-    const [filterSociety, setFilterSociety] = useState('all');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
 
     // 1. Partition Data
@@ -57,8 +57,8 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
     let standardItems = items.filter(i => i.type !== 'Recruiting');
 
     // 2. Apply Filters & Sorting to standard items
-    if (filterSociety !== 'all') {
-        standardItems = standardItems.filter(i => i.society === filterSociety);
+    if (locationFilter !== 'all') {
+        standardItems = standardItems.filter(i => i.origin === locationFilter);
     }
 
     const sortItems = (arr: MarketplaceItem[]) => {
@@ -99,9 +99,45 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                 </div>
             )}
 
-            {/* SECTION: LATEST ROLES (PROMOTED) */}
+
+            {/* SECTION 2: LATEST LISTINGS */}
+            <div className="feed-section">
+                <div className="feed-header" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <h2>Latest Marketplace</h2>
+                        <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Showing {displayItems.length} items</span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', background: '#fff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                        <div style={{ flex: 1, minWidth: '300px' }}>
+                            <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase' }}>Shop Order</label>
+                            <select value={sortOption} onChange={e => setSortOption(e.target.value)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', outline: 'none', cursor: 'pointer' }}>
+                                <option value="newest">Recently Posted</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="a-z">Name (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {displayItems.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', background: '#f9fafb', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
+                        <p style={{ color: '#6b7280', margin: 0 }}>No matching engineering gear found in this category.</p>
+                    </div>
+                ) : (
+                    <div className="items-grid">
+                        {displayItems.map((item) => (
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+
+            {/* SECTION: SOCIETY RECRUITMENT & ROLES (BOTTOM) */}
             {recruitingItems.length > 0 && (
-                <div className="feed-section" style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '4rem', marginBottom: '4rem' }}>
+                <div className="feed-section" style={{ marginTop: '5rem', borderTop: '1px solid #e5e7eb', paddingTop: '4rem' }}>
                     <div className="feed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                         <div>
                             <h2 style={{ color: '#4f46e5', marginBottom: '0.25rem' }}>Society Recruitment & Roles 👥</h2>
@@ -127,52 +163,6 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                     </div>
                 </div>
             )}
-
-            {/* SECTION 2: LATEST LISTINGS */}
-            <div className="feed-section">
-                <div className="feed-header" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                        <h2>Latest Marketplace</h2>
-                        <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Showing {displayItems.length} items</span>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', background: '#fff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                        <div style={{ flex: 1, minWidth: '200px' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase' }}>Society Category</label>
-                            <select value={filterSociety} onChange={e => setFilterSociety(e.target.value)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', outline: 'none', cursor: 'pointer' }}>
-                                <option value="all">All Specialties</option>
-                                <option value="Hyped">Hyped</option>
-                                <option value="HumanEd">HumanEd</option>
-                                <option value="Formula Student">Formula Student</option>
-                                <option value="CompSoc">CompSoc</option>
-                                <option value="Precious Plastic">Precious Plastic</option>
-                            </select>
-                        </div>
-                        <div style={{ flex: 1, minWidth: '200px' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.5rem', fontWeight: 700, color: '#374151', textTransform: 'uppercase' }}>Shop Order</label>
-                            <select value={sortOption} onChange={e => setSortOption(e.target.value)} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', width: '100%', outline: 'none', cursor: 'pointer' }}>
-                                <option value="newest">Recently Posted</option>
-                                <option value="price-low">Price: Low to High</option>
-                                <option value="price-high">Price: High to Low</option>
-                                <option value="a-z">Name (A-Z)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {displayItems.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem', background: '#f9fafb', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
-                        <p style={{ color: '#6b7280', margin: 0 }}>No matching engineering gear found in this category.</p>
-                    </div>
-                ) : (
-                    <div className="items-grid">
-                        {displayItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
-                        ))}
-                    </div>
-                )}
-            </div>
-
         </div>
     );
 }
@@ -252,7 +242,6 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
 
             <div className="item-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span className="item-society">{item.society}</span>
                     {item.origin && <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.85rem' }}>{item.origin}</span>}
                     {item.degree && <span style={{ color: '#4b5563', fontSize: '0.85rem', fontStyle: 'italic' }}>{item.degree}</span>}
                     {item.yearOfStudy && <span style={{ backgroundColor: badgeColor, color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{item.yearOfStudy}</span>}

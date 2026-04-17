@@ -15,7 +15,6 @@ interface ListingFormProps {
 export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProps) {
     const [title, setTitle] = useState(initialData?.title || '');
     const [description, setDescription] = useState(initialData?.description || '');
-    const [society, setSociety] = useState<SocietyName>(initialData?.society || 'Hyped');
     const [type, setType] = useState<EntryType>(initialData?.type || 'Materials');
     const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'meetup' | 'both'>(initialData?.deliveryMethod || 'meetup');
     const [meetupLocationName, setMeetupLocationName] = useState(initialData?.meetupLocationName || '');
@@ -61,7 +60,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
         onSubmit({
             title,
             description,
-            society,
+            society: 'Other',
             type,
             originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
             sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
@@ -105,19 +104,11 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                         />
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Society Category</label>
-                            <select value={society} onChange={e => setSociety(e.target.value as SocietyName)}>
-                                {SOCIETIES.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Content Type</label>
-                            <select value={type} onChange={e => setType(e.target.value as EntryType)}>
-                                {ENTRY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                        </div>
+                    <div className="form-group">
+                        <label>Listing Type</label>
+                        <select value={type} onChange={e => setType(e.target.value as EntryType)}>
+                            {ENTRY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
                     </div>
 
                     <div className="form-group">

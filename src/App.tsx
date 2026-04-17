@@ -108,6 +108,7 @@ function MainApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [globalProjects, setGlobalProjects] = useState<Project[]>([]);
+  const [locationFilter, setLocationFilter] = useState('all');
 
   useEffect(() => {
     let active = true;
@@ -430,6 +431,9 @@ function MainApp() {
         isLoggedIn={!!session}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        locationFilter={locationFilter}
+        onLocationFilterChange={setLocationFilter}
+        availableLocations={Array.from(new Set(items.map(i => i.origin || 'Other'))).filter(Boolean)}
         onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
         suggestions={items.map(i => i.title)}
         notifications={notifications}
@@ -439,7 +443,7 @@ function MainApp() {
       <main className="main-content container">
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} />} />
+            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} />} />
             <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
             <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
             <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />

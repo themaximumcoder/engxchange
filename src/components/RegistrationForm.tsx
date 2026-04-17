@@ -15,7 +15,9 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
         let active = true;
         const fetchUnis = async () => {
             try {
+                // External API can be flaky, we fetch UK list
                 const res = await fetch('https://universities.hipolabs.com/search?country=United+Kingdom');
+                if (!res.ok) throw new Error('API unreachable');
                 const data = await res.json();
                 if (active) {
                     const uniqueNames = Array.from(new Set<string>(data.map((u: any) => u.name as string)));
@@ -27,9 +29,25 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
                 }
             } catch (err) {
                 if (active) {
-                    console.error("Failed to fetch universities API", err);
-                    // Fallback just in case api fails
-                    setUniversities([{ name: 'University of Edinburgh' }]);
+                    console.error("Failed to fetch universities API, using internal list", err);
+                    // Robust static fallback for major UK engineering schools
+                    const fallbackUnis = [
+                        'University of Edinburgh',
+                        'Imperial College London',
+                        'University of Oxford',
+                        'University of Cambridge',
+                        'University of Manchester',
+                        'University of Glasgow',
+                        'University of Strathclyde',
+                        'Heriot-Watt University',
+                        'Loughborough University',
+                        'University of Bristol',
+                        'University of Sheffield',
+                        'University of Leeds',
+                        'University of Nottingham',
+                        'Other UK University'
+                    ].sort().map(name => ({ name }));
+                    setUniversities(fallbackUnis);
                     setSelectedUni('University of Edinburgh');
                     setLoading(false);
                 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ENTRY_TYPES } from '../types';
-import type { MarketplaceItem, EntryType } from '../types';
+import { ENTRY_TYPES, UNIVERSITY_PRESETS } from '../types';
+import type { MarketplaceItem, EntryType, UniversityPreset } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { Truck, MapPin } from 'lucide-react';
 import { LocationPicker } from './LocationPicker';
@@ -27,6 +27,8 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
     const [sellerPhone, setSellerPhone] = useState(initialData?.sellerPhone || '');
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedUni, setSelectedUni] = useState<UniversityPreset | null>(null);
+    const [isLocationConfirmed, setIsLocationConfirmed] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,6 +40,11 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
         // Validation
         if (type !== 'Recruiting' && op > 0 && sp > op) {
             setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please reduce the price to offer a student discount.`);
+            return;
+        }
+
+        if (deliveryMethod !== 'delivery' && !isLocationConfirmed) {
+            setError('Please confirm your meetup address on the map before publishing.');
             return;
         }
 
@@ -160,15 +167,100 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
 
                     <div className="map-picker-container" style={{ marginBottom: '1.5rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600 }}>Interactive Meetup Pin 📍</label>
+                    <div className="map-picker-container" style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ display: 'block', marginBottom: '1rem', fontWeight: 600 }}>Meetup Location 📍</label>
+                        
+                        <div className="university-presets" style={{ marginBottom: '1.5rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: '0.75rem' }}>
+                                Are you a University Student? Select your Uni:
+                            </label>
+                            <select 
+                                className="uni-select"
+                                value={selectedUni?.name || ''} 
+                                onChange={(e) => {
+                                    const uni = UNIVERSITY_PRESETS.find(u => u.name === e.target.value);
+                                    setSelectedUni(uni || null);
+                                    setIsLocationConfirmed(false);
+                                }}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '1rem' }}
+                            >
+                                <option value="">-- Choose University --</option>
+                                {UNIVERSITY_PRESETS.map(u => <option key={u.name} value={u.name}>{u.name}</option>)}
+                            </select>
+
+                            {selectedUni && (
+                                <div className="preset-spots">
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>
+                                        Common Meetup Spots:
+                                    </label>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        {selectedUni.locations.map(loc => (
+                                            <button
+                                                key={loc.name}
+                                                type="button"
+                                                className="preset-btn"
+                                                onClick={() => {
+                                                    setMeetupLat(loc.lat);
+                                                    setMeetupLng(loc.lng);
+                                                    setMeetupLocationName(loc.name);
+                                                    setIsLocationConfirmed(true);
+                                                }}
+                                                style={{
+                                                    padding: '0.5rem 0.75rem',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #e2e8f0',
+                                                    background: '#fff',
+                                                    fontSize: '0.85rem',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {loc.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <LocationPicker
                             initialLat={meetupLat}
                             initialLng={meetupLng}
                             onLocationChange={(lat, lng, name) => {
                                 setMeetupLat(lat);
                                 setMeetupLng(lng);
-                                if (!meetupLocationName) setMeetupLocationName(name);
+                                setMeetupLocationName(name);
+                                setIsLocationConfirmed(false);
                             }}
                         />
+
+                        <div className="address-confirmation" style={{ marginTop: '1rem', padding: '1rem', background: isLocationConfirmed ? '#f0fdf4' : '#fff7ed', borderRadius: '8px', border: `1px solid ${isLocationConfirmed ? '#bbf7d0' : '#ffedd5'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ fontSize: '1.25rem' }}>{isLocationConfirmed ? '✅' : '❓'}</div>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: isLocationConfirmed ? '#166534' : '#9a3412' }}>
+                                        {isLocationConfirmed ? 'Address Confirmed' : 'Please Confirm the Address'}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}>{meetupLocationName || 'No location pinned yet'}</div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsLocationConfirmed(!isLocationConfirmed)}
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    borderRadius: '6px',
+                                    background: isLocationConfirmed ? '#166534' : '#ea580c',
+                                    color: '#fff',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {isLocationConfirmed ? 'Change' : 'Confirm'}
+                            </button>
+                        </div>
                     </div>
                 </section>
 

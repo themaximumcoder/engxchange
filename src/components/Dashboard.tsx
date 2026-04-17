@@ -8,7 +8,7 @@ import './Dashboard.css';
 interface DashboardProps {
     items: MarketplaceItem[];
     currentUserEmail: string;
-    onMarkSold: (id: string) => void;
+    onMarkSold: (id: string, isSold: boolean) => void;
     onDeleteListing: (id: string) => void;
     onUpdateListing: (id: string, updates: Partial<MarketplaceItem>) => void;
 }
@@ -104,9 +104,13 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
             </div>
 
             <div className="dashboard-item-actions">
-                {!item.isSold && item.type !== 'Recruiting' && (
-                    <button className="btn btn-outline" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => onMarkSold(item.id)}>
-                        Mark as Sold
+                {item.type !== 'Recruiting' && (
+                    <button 
+                        className="btn btn-outline" 
+                        style={{ width: '100%', fontSize: '0.85rem', borderColor: item.isSold ? '#10b981' : undefined, color: item.isSold ? '#10b981' : undefined }} 
+                        onClick={() => onMarkSold(item.id, !item.isSold)}
+                    >
+                        {item.isSold ? 'Mark as Unsold' : 'Mark as Sold'}
                     </button>
                 )}
                 <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>

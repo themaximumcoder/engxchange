@@ -10,6 +10,7 @@ interface MarketplaceFeedProps {
     onReport?: (id: string, type: string, reason: string) => void;
     onLikeItem: (id: string) => void;
     locationFilter?: string;
+    savedItems: string[];
 }
 
 const NEWS_SLIDES = [
@@ -47,7 +48,7 @@ function HeroCarousel() {
     );
 }
 
-export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all' }: MarketplaceFeedProps) {
+export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
 
@@ -93,7 +94,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                     <div className="slider-container">
                         {hotItems.map((item) => (
                             <div key={item.id} className="slider-item">
-                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
+                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                             </div>
                         ))}
                     </div>
@@ -129,7 +130,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                 ) : (
                     <div className="items-grid">
                         {displayItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                         ))}
                     </div>
                 )}
@@ -158,7 +159,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
 
                     <div className="items-grid">
                         {sortRecruitItems(recruitingItems).map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} />
+                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                         ))}
                     </div>
                 </div>
@@ -185,7 +186,7 @@ function getTimeAgo(dateString: string): string {
     }
 }
 
-function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void }) {
+function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
     const isRecruit = item.type === 'Recruiting';
@@ -200,6 +201,8 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
         'PhD': '#eab308'
     };
     const badgeColor = item.yearOfStudy ? YEAR_COLORS[item.yearOfStudy] || '#6b7280' : '#6b7280';
+    const isSaved = savedItems.includes(item.id);
+    const sellerUsername = item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineering Student';
 
     const baseSellingPrice = item.sellingPrice;
     const hasStudentDiscount = isStudentVerified && baseSellingPrice !== undefined && baseSellingPrice > 0;
@@ -242,8 +245,9 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
                         className="like-heart-button"
                         onClick={(e) => { e.stopPropagation(); onLikeItem(item.id); }}
                         title="I'm interested!"
+                        style={{ color: isSaved ? '#ef4444' : '#d1d5db', transform: isSaved ? 'scale(1.1)' : 'scale(1)' }}
                     >
-                        ❤️
+                        {isSaved ? '❤️' : '🤍'}
                     </button>
                 </div>
             )}
@@ -265,7 +269,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem }:
             <div className="item-body">
                 <h3 className="item-title">{item.title}</h3>
                 <small style={{ color: '#888', display: 'block', marginBottom: '8px' }}>
-                    Posted {getTimeAgo(item.createdAt)}
+                    By {sellerUsername} &bull; {getTimeAgo(item.createdAt)}
                 </small>
                 <p className="item-desc">{item.description}</p>
             </div>

@@ -17,6 +17,7 @@ import { ItemDetails } from './components/ItemDetails';
 import { NotificationsPage } from './components/NotificationsPage';
 import { UpdatePassword } from './components/UpdatePassword';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { UNIVERSITY_PRESETS } from './types';
 import type { MarketplaceItem, ForumPost, Comment, Message, Notification, Project, SocietyName, EntryType } from './types';
 import { supabase } from './lib/supabaseClient';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -99,6 +100,7 @@ function ScrollToTop() {
 
 function MainApp() {
   const navigate = useNavigate();
+  const [savedItems, setSavedItems] = useState<string[]>([]);
   const [items, setItems] = useState<MarketplaceItem[]>([]);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -214,6 +216,11 @@ function MainApp() {
         })));
       }
 
+      const { data: sData } = await supabase.from('saved_items').select('item_id').eq('user_email', session.user.email);
+      if (active && sData) {
+        setSavedItems(sData.map((r: Record<string, unknown>) => r.item_id as string));
+      }
+
       msgSub = supabase.channel('realtime-messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
           const r = payload.new;
@@ -275,8 +282,13 @@ function MainApp() {
   const isStudentVerified = currentUserEmail.trim().toLowerCase().endsWith('.ac.uk') ||
     currentUserEmail.trim().toLowerCase().endsWith('.edu');
 
-  const handleMarkSold = (id: string) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, isSold: true } : item));
+  const handleToggleSold = async (id: string, isSold: boolean) => {
+    setItems(prev => prev.map(item => item.id === id ? { ...item, isSold } : item));
+    const { error } = await supabase.from('items').update({ is_sold: isSold }).eq('id', id);
+    if (error) {
+      console.error("Sold toggle failed:", error);
+      alert('Update failed: ' + error.message);
+    }
   };
 
   const handleDeleteListing = (id: string) => {
@@ -417,16 +429,31 @@ function MainApp() {
   };
 
   const handleLikeItem = async (itemId: string) => {
-    if (!session) { alert('Please login to like items.'); return; }
+    if (!session) { alert('Please login to save items.'); return; }
+    
+    const isSaved = savedItems.includes(itemId);
     new Audio('https://www.soundjay.com/buttons/sounds/button-4.mp3').play().catch(() => { });
-    const item = items.find(i => i.id === itemId);
-    if (item && item.sellerEmail && item.sellerEmail !== session.user.email) {
-      supabase.from('notifications').insert([{
-        user_email: item.sellerEmail,
-        type: 'like',
-        message: `${session.user.email} liked your listing: "${item.title}"`
-      }]).then();
-      alert(`Interest noted! ${item.sellerEmail} has been notified.`);
+
+    if (isSaved) {
+      setSavedItems(prev => prev.filter(id => id !== itemId));
+      await supabase.from('saved_items').delete().eq('user_email', session.user.email!).eq('item_id', itemId);
+    } else {
+      setSavedItems(prev => [...prev, itemId]);
+      const { error } = await supabase.from('saved_items').insert([{ user_email: session.user.email!, item_id: itemId }]);
+      if (error) {
+         console.error("Save failed:", error);
+         setSavedItems(prev => prev.filter(id => id !== itemId));
+         return;
+      }
+      
+      const item = items.find(i => i.id === itemId);
+      if (item && item.sellerEmail && item.sellerEmail !== session.user.email!) {
+        supabase.from('notifications').insert([{
+          user_email: item.sellerEmail,
+          type: 'like',
+          message: `${session.user.email!.split('@')[0]} liked your listing: "${item.title}"`
+        }]).then();
+      }
     }
   };
 
@@ -462,7 +489,7 @@ function MainApp() {
         onSearchChange={setSearchQuery}
         locationFilter={locationFilter}
         onLocationFilterChange={setLocationFilter}
-        availableLocations={Array.from(new Set(items.map(i => i.origin || 'Other'))).filter(Boolean)}
+        availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
         onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
         suggestions={items.map(i => i.title)}
         notifications={notifications}
@@ -472,10 +499,10 @@ function MainApp() {
       <main className="main-content container">
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} />} />
+            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
             <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
             <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleMarkSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
             <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
             <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
             <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />

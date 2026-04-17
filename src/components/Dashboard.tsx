@@ -14,7 +14,12 @@ interface DashboardProps {
 
 export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing }: DashboardProps) {
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
-    const sellerItems = items.filter(i => i.sellerEmail === currentUserEmail);
+    const sellerItems = items.filter(i =>
+        i.sellerEmail?.toLowerCase() === currentUserEmail?.toLowerCase()
+    );
+
+    // Find current user points from the items (assuming they are injected by App.tsx)
+    const userPoints = sellerItems.length > 0 ? sellerItems[0].points : 0;
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to permanently delete this listing?')) return;
@@ -71,9 +76,17 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
 
     return (
         <div className="dashboard-container">
-            <div className="dashboard-header">
-                <h2>My Listings</h2>
-                <p>Manage your listed items below.</p>
+            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                    <h2>My Listings</h2>
+                    <p>Manage your listed items below.</p>
+                </div>
+                <div style={{ background: '#fef3c7', padding: '0.75rem 1.25rem', borderRadius: '12px', border: '1px solid #fcd34d', textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Score</span>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#92400e' }}>
+                        ⭐ {userPoints || 0} pts
+                    </div>
+                </div>
             </div>
 
             {sellerItems.length === 0 ? (

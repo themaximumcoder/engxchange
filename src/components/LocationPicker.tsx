@@ -1,3 +1,4 @@
+/// <reference types="@types/google.maps" />
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
     APIProvider,
@@ -6,6 +7,7 @@ import {
     Pin,
     useMap,
     useMapsLibrary,
+    type MapMouseEvent,
 } from '@vis.gl/react-google-maps';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -89,12 +91,12 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
         }
     }, [initialLat, initialLng]);
 
-    const handleMapClick = useCallback((ev: { detail: { latLng: { lat: number; lng: number } } }) => {
+    const handleMapClick = useCallback((ev: MapMouseEvent) => {
         if (readOnly) return;
-        const newLat = ev.detail.latLng.lat;
-        const newLng = ev.detail.latLng.lng;
-        setMarkerLocation({ lat: newLat, lng: newLng });
-        onLocationChange(newLat, newLng, `Custom Marker Position`);
+        if (!ev.detail.latLng) return;
+        const { lat, lng } = ev.detail.latLng;
+        setMarkerLocation({ lat, lng });
+        onLocationChange(lat, lng, `Custom Marker Position`);
     }, [onLocationChange, readOnly]);
 
     const handlePlaceSelect = useCallback((place: google.maps.places.PlaceResult) => {

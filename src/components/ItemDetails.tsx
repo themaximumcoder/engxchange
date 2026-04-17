@@ -3,15 +3,19 @@ import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 
-export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], isLoggedIn: boolean }) {
+export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: MarketplaceItem[], isLoggedIn: boolean, isStudentVerified: boolean }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const item = items.find(i => i.id === id);
 
     if (!item) return <div style={{ padding: '4rem', textAlign: 'center' }}><h2>Item not found</h2><button className="btn btn-outline" onClick={() => navigate('/')}>Back to Feed</button></div>;
 
-    const discountPercent = item.originalPrice && item.sellingPrice
-        ? Math.round(((item.originalPrice - item.sellingPrice) / item.originalPrice) * 100)
+    const basePrice = item.sellingPrice || 0;
+    const finalPrice = isStudentVerified && basePrice > 0 ? basePrice * 0.9 : basePrice;
+    const hasDiscount = !!(item.originalPrice && finalPrice < item.originalPrice);
+
+    const discountPercent = hasDiscount
+        ? Math.round(((item.originalPrice! - finalPrice) / item.originalPrice!) * 100)
         : 0;
 
     return (
@@ -39,13 +43,16 @@ export function ItemDetails({ items, isLoggedIn }: { items: MarketplaceItem[], i
 
                     <div className="info-price-section">
                         {item.type !== 'Recruiting' && (
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
-                                <span className="info-selling-price">£{item.sellingPrice?.toFixed(2) ?? '0.00'}</span>
-                                {discountPercent > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap' }}>
+                                <span className="info-selling-price">£{finalPrice.toFixed(2)}</span>
+                                {hasDiscount && (
                                     <>
-                                        <span className="info-discount">-{discountPercent}% OFF</span>
-                                        <span className="info-original-price">£{item.originalPrice?.toFixed(2) ?? '0.00'}</span>
+                                        <span className="info-discount" style={{ color: '#ef4444', fontWeight: 'bold' }}>-{discountPercent}% OFF</span>
+                                        <span className="info-original-price">£{item.originalPrice?.toFixed(2)}</span>
                                     </>
+                                )}
+                                {isStudentVerified && (
+                                    <span style={{ background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>Student Price Applied</span>
                                 )}
                             </div>
                         )}

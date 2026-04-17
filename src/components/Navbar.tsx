@@ -61,6 +61,7 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
 
                     <div className="nav-right-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
                         <div className="nav-links-desktop" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', borderRight: '1px solid #e5e7eb', paddingRight: '0.75rem' }}>
+                            <Link to="/" className="nav-link-secondary" style={{ fontSize: '0.9rem' }}>Marketplace</Link>
                             <Link to="/forum" className="nav-link-secondary" style={{ fontSize: '0.9rem' }}>Community</Link>
                             {isLoggedIn && (
                                 <>

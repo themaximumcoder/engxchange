@@ -500,7 +500,7 @@ function MainApp() {
         <ErrorBoundary>
           <Routes>
             <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
-            <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} />} />
+            <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} />} />
             <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
             <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
             <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />

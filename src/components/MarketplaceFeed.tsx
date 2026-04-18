@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getSmartPlaceholder, getTimeAgo } from '../lib/helpers';
 import type { MarketplaceItem } from '../types';
 import './MarketplaceFeed.css';
 
@@ -168,31 +169,6 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
     );
 }
 
-function getTimeAgo(dateString: string): string {
-    if (!dateString) return '';
-    const diff = Date.now() - new Date(dateString).getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days >= 30) {
-        const months = Math.floor(days / 30);
-        return months === 1 ? '1 month ago' : `${months} months ago`;
-    } else if (days >= 1) {
-        return days === 1 ? '1 day ago' : `${days} days ago`;
-    } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        if (hours >= 1) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
-        const mins = Math.floor(diff / (1000 * 60));
-        return mins <= 1 ? 'just now' : `${mins} mins ago`;
-    }
-}
-
-function getPlaceholderImage(society: string): string {
-    const s = society.toLowerCase();
-    if (s.includes('comp') || s.includes('elec')) return '/placeholders/circuit.png';
-    if (s.includes('bio') || s.includes('chem')) return '/placeholders/bio.png';
-    if (s.includes('civil') || s.includes('struct') || s.includes('truss')) return '/placeholders/truss.png';
-    return '/placeholders/gears.png';
-}
 
 function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
     const navigate = useNavigate();
@@ -250,7 +226,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                     <img src={item.imageUrl} alt={item.title} className="item-image" />
                 ) : (
                     <div className="placeholder-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
-                        <img src={getPlaceholderImage(item.society)} alt="Placeholder" style={{ width: '80%', height: '80%', objectFit: 'contain', opacity: 0.6 }} />
+                        <img src={getSmartPlaceholder(item.title, item.society)} alt="Placeholder" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} />
                     </div>
                 )}
                 <button

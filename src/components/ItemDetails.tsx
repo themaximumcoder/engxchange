@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getSmartPlaceholder } from '../lib/helpers';
 import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
@@ -39,7 +40,9 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
                     {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.title} />
                     ) : (
-                        <div className="no-image">No Image Available</div>
+                        <div className="item-placeholder-smart" style={{ width: '100%', height: '100%', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: '12px', overflow: 'hidden' }}>
+                            <img src={getSmartPlaceholder(item.title, item.society)} alt="Smart Placeholder" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
                     )}
                 </div>
 

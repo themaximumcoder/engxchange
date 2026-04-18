@@ -23,7 +23,8 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
     const [originalPrice, setOriginalPrice] = useState<string>(initialData?.originalPrice?.toString() || '');
     const [sellingPrice, setSellingPrice] = useState<string>(initialData?.sellingPrice?.toString() || '');
     const [transactionMode, setTransactionMode] = useState<'sell' | 'trade' | 'both'>(initialData?.transactionMode || 'sell');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>(initialData?.imageUrls || (initialData?.imageUrl ? [initialData.imageUrl] : []));
     const [sellerEmail, setSellerEmail] = useState(initialData?.sellerEmail || '');
     const [sellerPhone, setSellerPhone] = useState(initialData?.sellerPhone || '');
     const [uploading, setUploading] = useState(false);
@@ -50,19 +51,24 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
         }
 
         setUploading(true);
-        let uploadedImageUrl = initialData?.imageUrl;
-        if (imageFile) {
-            const fileExt = imageFile.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const { data, error } = await supabase.storage.from('marketplace_files').upload(fileName, imageFile);
-            if (!error && data) {
-                const { data: { publicUrl } } = supabase.storage.from('marketplace_files').getPublicUrl(data.path);
-                uploadedImageUrl = publicUrl;
-            } else {
-                alert('Image upload failed: ' + error?.message);
-                setUploading(false);
-                return;
+        let finalImageUrls = initialData?.imageUrls || (initialData?.imageUrl ? [initialData.imageUrl] : []);
+        
+        if (imageFiles.length > 0) {
+            const uploadedUrls: string[] = [];
+            for (const file of imageFiles) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const { data, error } = await supabase.storage.from('marketplace_files').upload(fileName, file);
+                
+                if (!error && data) {
+                    const { data: { publicUrl } } = supabase.storage.from('marketplace_files').getPublicUrl(data.path);
+                    uploadedUrls.push(publicUrl);
+                } else {
+                    console.error('Image upload failed:', error?.message);
+                }
             }
+            // If we are updating, we append. If new, we replace.
+            finalImageUrls = initialData?.id ? [...finalImageUrls, ...uploadedUrls] : uploadedUrls;
         }
 
         onSubmit({
@@ -72,7 +78,8 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
             type,
             originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
             sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
-            imageUrl: uploadedImageUrl,
+            imageUrls: finalImageUrls,
+            imageUrl: finalImageUrls[0] || undefined,
             sellerEmail: sellerEmail || undefined,
             sellerPhone: sellerPhone || undefined,
             deliveryMethod: type === 'Recruiting' ? undefined : deliveryMethod,
@@ -274,10 +281,42 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                 </section>
 
                 <section className="form-section">
-                    <h3 className="section-title">3. Media & Contact</h3>
+                    <h3 className="section-title">3. Media & Gallery</h3>
                     <div className="form-group">
-                        <label>Item Image</label>
-                        <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} />
+                        <label>Upload Gear Photos (Max 5)</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.5rem', marginBottom: '1rem' }}>
+                            {imagePreviews.map((url, i) => (
+                                <div key={i} style={{ position: 'relative', aspectRatio: '1/1', background: '#f1f5f9', borderRadius: '8px', overflow: 'hidden' }}>
+                                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => {
+                                            setImagePreviews(prev => prev.filter((_, idx) => idx !== i));
+                                            setImageFiles(prev => prev.filter((_, idx) => idx !== i));
+                                        }}
+                                        style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', cursor: 'pointer' }}
+                                    >✕</button>
+                                </div>
+                            ))}
+                            {imagePreviews.length < 5 && (
+                                <label style={{ aspectRatio: '1/1', border: '2px dashed #cbd5e1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.5rem', color: '#94a3b8' }}>
+                                    +
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        multiple 
+                                        style={{ display: 'none' }} 
+                                        onChange={e => {
+                                            const files = Array.from(e.target.files || []);
+                                            const newFiles = files.slice(0, 5 - imageFiles.length);
+                                            setImageFiles(prev => [...prev, ...newFiles]);
+                                            const previews = newFiles.map(f => URL.createObjectURL(f));
+                                            setImagePreviews(prev => [...prev, ...previews]);
+                                        }} 
+                                    />
+                                </label>
+                            )}
+                        </div>
                     </div>
                     <div className="form-row">
                         <div className="form-group">

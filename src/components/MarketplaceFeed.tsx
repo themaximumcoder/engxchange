@@ -237,7 +237,9 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
         >
             <div className="item-image-container">
                 {item.isSold && <div className="sold-overlay">SOLD</div>}
-                {item.imageUrl ? (
+                {item.imageUrls && item.imageUrls.length > 0 ? (
+                    <img src={item.imageUrls[0]} alt={item.title} className="item-image" />
+                ) : item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.title} className="item-image" />
                 ) : (
                     <div className="placeholder-image" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>

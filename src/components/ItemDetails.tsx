@@ -12,6 +12,7 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
 
     if (!item) return <div style={{ padding: '4rem', textAlign: 'center' }}><h2>Item not found</h2><button className="btn btn-outline" onClick={() => navigate('/')}>Back to Feed</button></div>;
     
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isTradeSelectorOpen, setIsTradeSelectorOpen] = useState(false);
     const myItems = items.filter(i => i.sellerEmail === currentUserEmail && !i.isSold && i.id !== item.id);
 
@@ -36,7 +37,28 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
 
             <div className="item-details-grid">
                 <div className="item-details-image">
-                    {item.imageUrl ? (
+                    {item.imageUrls && item.imageUrls.length > 0 ? (
+                        <div className="gallery-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
+                            <img src={item.imageUrls[activeImageIndex]} alt={item.title} key={activeImageIndex} style={{ animation: 'fadeIn 0.3s ease' }} />
+                            
+                            {item.imageUrls.length > 1 && (
+                                <>
+                                    <button className="gallery-arrow left" onClick={() => setActiveImageIndex(prev => (prev === 0 ? item.imageUrls!.length - 1 : prev - 1))}>‹</button>
+                                    <button className="gallery-arrow right" onClick={() => setActiveImageIndex(prev => (prev === item.imageUrls!.length - 1 ? 0 : prev + 1))}>›</button>
+                                    
+                                    <div className="gallery-dots">
+                                        {item.imageUrls.map((_, i) => (
+                                            <span 
+                                                key={i} 
+                                                className={`dot ${i === activeImageIndex ? 'active' : ''}`}
+                                                onClick={() => setActiveImageIndex(i)}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.title} />
                     ) : (
                         <div className="item-placeholder-smart" style={{ width: '100%', height: '100%', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: '12px', overflow: 'hidden' }}>

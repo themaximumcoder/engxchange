@@ -35,6 +35,7 @@ export interface MarketplaceItem {
     meetupLat?: number;
     meetupLng?: number;
     views?: number;
+    imageUrls?: string[];
     origin?: string;
     degree?: string;
     yearOfStudy?: string;

@@ -116,82 +116,76 @@ function MainApp() {
   const [globalProjects, setGlobalProjects] = useState<Project[]>([]);
   const [locationFilter, setLocationFilter] = useState('all');
 
+  const loadData = useCallback(async () => {
+    const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });
+
+    const { data: uData } = await supabase.from('users').select('email, university, degree, year_of_study, points, profile_picture_url, username');
+    const userMap = new Map(uData?.map((u: Record<string, unknown>) => [u.email as string, { uni: u.university as string, deg: u.degree as string, yr: u.year_of_study as string, pts: (u.points as number) || 0, avatar: u.profile_picture_url as string, name: u.username as string }]) || []);
+
+    setItems(iData?.map(row => {
+      const item = mapItemFromDB(row);
+      const u = userMap.get(item.sellerEmail || '');
+      item.origin = u?.uni || '';
+      item.degree = u?.deg || '';
+      item.yearOfStudy = u?.yr || '';
+      item.points = u?.pts || 0;
+      item.sellerAvatar = u?.avatar || '';
+      item.sellerName = u?.name || '';
+      return item;
+    }) || []);
+
+    const { data: pData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    if (pData) {
+      setPosts(pData.map(row => {
+        const post = mapPostFromDB(row);
+        const u = userMap.get(post.authorEmail || '');
+        post.origin = u?.uni || '';
+        post.degree = u?.deg || '';
+        post.yearOfStudy = u?.yr || '';
+        post.points = u?.pts || 0;
+        return post as ForumPost;
+      }));
+    }
+
+    const { data: cData } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+    if (cData) {
+      setComments(cData.map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        postId: row.post_id as string,
+        authorEmail: row.author_email as string,
+        content: row.content as string,
+        createdAt: row.created_at as string,
+        points: (userMap.get(row.author_email as string)?.pts as number) || 0
+      })));
+    }
+
+    const { data: projData } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+    if (projData) setGlobalProjects(projData);
+  }, []);
+
   useEffect(() => {
-    let active = true;
-    const loadData = async () => {
-      const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });
-
-      const { data: uData } = await supabase.from('users').select('email, university, degree, year_of_study, points, profile_picture_url, username');
-      const userMap = new Map(uData?.map((u: Record<string, unknown>) => [u.email as string, { uni: u.university as string, deg: u.degree as string, yr: u.year_of_study as string, pts: (u.points as number) || 0, avatar: u.profile_picture_url as string, name: u.username as string }]) || []);
-
-      if (active && iData) {
-        setItems(iData.map(row => {
-          const item = mapItemFromDB(row);
-          const u = userMap.get(item.sellerEmail || '');
-          item.origin = u?.uni || '';
-          item.degree = u?.deg || '';
-          item.yearOfStudy = u?.yr || '';
-          item.points = u?.pts || 0;
-          item.sellerAvatar = u?.avatar || '';
-          item.sellerName = u?.name || '';
-          return item;
-        }));
-      }
-
-      const { data: pData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
-      if (active && pData) {
-        setPosts(pData.map(row => {
-          const post = mapPostFromDB(row);
-          const u = userMap.get(post.authorEmail || '');
-          post.origin = u?.uni || '';
-          post.degree = u?.deg || '';
-          post.yearOfStudy = u?.yr || '';
-          post.points = u?.pts || 0;
-          return post as ForumPost;
-        }));
-      }
-
-      const { data: cData } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
-      if (active && cData) {
-        setComments(cData.map((row: Record<string, unknown>) => ({
-          id: row.id as string,
-          postId: row.post_id as string,
-          authorEmail: row.author_email as string,
-          content: row.content as string,
-          createdAt: row.created_at as string,
-          points: (userMap.get(row.author_email as string)?.pts as number) || 0
-        })));
-      }
-
-      const { data: projData } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-      if (active && projData) setGlobalProjects(projData);
-    };
     loadData();
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (active) {
-        setSession(session);
-        if (session?.user?.id) {
-          const stored = localStorage.getItem(`votes_${session.user.id}`);
-          setUserVotes(stored ? JSON.parse(stored) : {});
-        }
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      if (currentSession?.user?.id) {
+        const stored = localStorage.getItem(`votes_${currentSession.user.id}`);
+        setUserVotes(stored ? JSON.parse(stored) : {});
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active) {
-        setSession(session);
-        if (session?.user?.id) {
-          const stored = localStorage.getItem(`votes_${session.user.id}`);
-          setUserVotes(stored ? JSON.parse(stored) : {});
-        } else {
-          setUserVotes({});
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      if (currentSession?.user?.id) {
+        const stored = localStorage.getItem(`votes_${currentSession.user.id}`);
+        setUserVotes(stored ? JSON.parse(stored) : {});
+      } else {
+        setUserVotes({});
       }
     });
 
-    return () => { active = false; subscription.unsubscribe(); };
-  }, []);
+    return () => { subscription.unsubscribe(); };
+  }, [loadData]);
 
   useEffect(() => {
     let active = true;
@@ -550,7 +544,7 @@ function MainApp() {
               <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
               <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
-              <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} /></RequireAuth>} />
+              <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} onProfileUpdate={loadData} /></RequireAuth>} />
               <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
               <Route path="/update-password" element={<UpdatePassword />} />
               <Route path="/terms" element={<TermsPage />} />

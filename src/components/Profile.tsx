@@ -88,9 +88,18 @@ export function Profile({ session }: { session: Session | null }) {
         setLoading(true);
         try {
             if (!session?.user?.id) throw new Error('No active session.');
-            const updates = { username, university, degree, year_of_study: yearOfStudy, profile_picture_url: profilePictureUrl };
-            const { error } = await supabase.from('users').update(updates).eq('id', session.user.id);
+            const updates = { 
+                id: session.user.id,
+                email: session.user.email,
+                username, 
+                university, 
+                degree, 
+                year_of_study: yearOfStudy, 
+                profile_picture_url: profilePictureUrl 
+            };
+            const { error } = await supabase.from('users').upsert(updates);
             if (error) throw error;
+            if (onProfileUpdate) onProfileUpdate();
             alert('Profile configuration locked and updated successfully!');
         } catch (error: unknown) {
             alert('Error updating profile: ' + (error instanceof Error ? error.message : 'Unknown error'));

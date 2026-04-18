@@ -40,12 +40,18 @@ export function getSmartPlaceholder(title: string, society: string): string {
         return 'https://images.unsplash.com/photo-1537151372322-15d7123bc39c?auto=format&fit=crop&q=80&w=800'; // Industrial gears
     }
 
-    // Default Society / Vector Fallbacks (Local)
-    if (s.includes('comp') || s.includes('elec')) return '/placeholders/circuit.png';
-    if (s.includes('bio') || s.includes('chem')) return '/placeholders/bio.png';
-    if (s.includes('civil') || s.includes('struct') || s.includes('truss')) return '/placeholders/truss.png';
+    // Default Society Stock Fallbacks (Premium replacements for old PNG icons)
+    if (s.includes('comp') || s.includes('elec') || s.includes('software')) {
+        return 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800'; // Coding/Software
+    }
+    if (s.includes('bio') || s.includes('chem') || s.includes('medical')) {
+        return 'https://images.unsplash.com/photo-1532187863486-abf9d3971a17?auto=format&fit=crop&q=80&w=800'; // Lab/Science
+    }
+    if (s.includes('civil') || s.includes('struct') || s.includes('mech') || s.includes('truss')) {
+        return 'https://images.unsplash.com/photo-1541888941259-79273946027a?auto=format&fit=crop&q=80&w=800'; // Construction/Mech
+    }
     
-    // Generic high-quality engineering background if all else fails
+    // Generic high-quality engineering workspace if all else fails
     return 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=1000'; 
 }
 

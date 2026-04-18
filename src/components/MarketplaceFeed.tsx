@@ -215,8 +215,17 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
         if (!item.deliveryMethod) return null;
         const labels = { delivery: '🚚 Delivery', meetup: '🤝 Meet up', both: '🚚/🤝 Delivery or Meet up' };
         return (
-            <span className="item-society" style={{ marginLeft: 'auto', background: '#e0e7ff', color: '#3730a3', border: 'none' }}>
+            <span className="item-society" style={{ background: '#e0e7ff', color: '#3730a3', border: 'none' }}>
                 {labels[item.deliveryMethod]}
+            </span>
+        );
+    };
+
+    const renderTransactionBadge = () => {
+        if (item.transactionMode === 'sell' || !item.transactionMode) return null;
+        return (
+            <span className="item-society" style={{ background: '#fef3c7', color: '#92400e', border: 'none' }}>
+                🔄 Exchange Available
             </span>
         );
     };
@@ -263,7 +272,10 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                     {!!item.points && <span style={{ color: '#ca8a04', fontWeight: 'bold', fontSize: '0.85rem' }}>⭐ {item.points} pts</span>}
                 </div>
                 <span className="item-type">{item.type}</span>
-                {renderDeliveryBadge()}
+                <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {renderTransactionBadge()}
+                    {renderDeliveryBadge()}
+                </div>
             </div>
 
             <div className="item-body" style={{ flexGrow: 1 }}>

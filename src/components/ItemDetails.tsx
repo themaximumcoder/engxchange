@@ -77,6 +77,11 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
                             </div>
                         )}
                         {item.type === 'Recruiting' && <div className="recruiting-tag">OPEN ROLE</div>}
+                        {(item.transactionMode === 'trade' || item.transactionMode === 'both') && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '0.4rem 0.8rem', background: '#fef3c7', color: '#92400e', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 700, marginTop: '1rem' }}>
+                                🔄 Exchange Available
+                            </div>
+                        )}
                     </div>
 
                     <div className="info-description">

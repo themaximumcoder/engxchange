@@ -97,12 +97,14 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                 year_of_study: yearOfStudy, 
                 profile_picture_url: profilePictureUrl 
             };
-            const { error } = await supabase.from('users').upsert(updates);
-            if (error) throw error;
-            if (onProfileUpdate) onProfileUpdate();
+            const { error: dbError } = await supabase.from('users').upsert(updates);
+            if (dbError) throw dbError;
+            if (onProfileUpdate) await onProfileUpdate();
             alert('Profile configuration locked and updated successfully!');
-        } catch (error: unknown) {
-            alert('Error updating profile: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } catch (err: any) {
+            console.error('Full Profile Error Context:', err);
+            const msg = err.message || (typeof err === 'string' ? err : 'Unknown database constraint error');
+            alert('Error updating profile: ' + msg);
         } finally {
             setLoading(false);
         }
@@ -202,10 +204,8 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                                     <button
                                         key={avatar.id}
                                         type="button"
-                                        onClick={async () => {
-                                            if (!session?.user?.id) return;
+                                        onClick={() => {
                                             setProfilePictureUrl(avatar.path);
-                                            await supabase.from('users').update({ profile_picture_url: avatar.path }).eq('id', session.user.id);
                                         }}
                                         style={{
                                             border: profilePictureUrl === avatar.path ? '3px solid #6366f1' : '3px solid transparent',

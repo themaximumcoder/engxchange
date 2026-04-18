@@ -199,15 +199,6 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
     const [isHovered, setIsHovered] = useState(false);
     const isRecruit = item.type === 'Recruiting';
     
-    const YEAR_COLORS: Record<string, string> = {
-        'Year 1': '#9ca3af',
-        'Year 2': '#10b981',
-        'Year 3': '#3b82f6',
-        'Year 4': '#8b5cf6',
-        'Year 5': '#f97316',
-        'Master': '#ef4444',
-        'PhD': '#eab308'
-    };
     const isSaved = savedItems.includes(item.id);
     const sellerUsername = item.sellerName || (item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer');
 

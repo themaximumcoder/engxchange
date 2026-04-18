@@ -28,15 +28,15 @@ export function getSmartPlaceholder(title: string, society: string): string {
     }
 
     // Tools & Prototypes
-    if (t.includes('3d printer') || t.includes('filament') || t.includes('pla') || t.includes('printer') || t.includes('nozzle')) {
+    if (t.includes('3d printer') || t.includes('filament') || t.includes('pla') || t.includes('printer') || t.includes('nozzle') || t.includes('3d')) {
         return 'https://images.unsplash.com/photo-1631541913700-6421524e7587?auto=format&fit=crop&q=80&w=800'; // 3D Printer
     }
-    if (t.includes('drill') || t.includes('tool') || t.includes('wrench') || t.includes('hammer') || t.includes('kit') || t.includes('screwdriver')) {
+    if (t.includes('drill') || t.includes('tool') || t.includes('wrench') || t.includes('hammer') || t.includes('kit') || t.includes('screwdriver') || t.includes('dremel') || t.includes('pliers')) {
         return 'https://images.unsplash.com/photo-1530124560677-bbfda89676e1?auto=format&fit=crop&q=80&w=800'; // Toolkit
     }
 
     // Mechanical Components
-    if (t.includes('gear') || t.includes('motor') || t.includes('servo') || t.includes('bearing') || t.includes('shaft')) {
+    if (t.includes('gear') || t.includes('motor') || t.includes('servo') || t.includes('bearing') || t.includes('shaft') || t.includes('engine') || t.includes('piston')) {
         return 'https://images.unsplash.com/photo-1537151372322-15d7123bc39c?auto=format&fit=crop&q=80&w=800'; // Industrial gears
     }
 

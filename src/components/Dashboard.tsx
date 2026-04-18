@@ -147,9 +147,6 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
             <div className="dashboard-sections">
                 {/* SECTION: GEAR & ITEMS */}
                 <section>
-                    <h2 className="dashboard-section-title">
-                        <Package size={28} /> Engineering Gear & Equipment
-                    </h2>
                     {gearItems.length === 0 ? (
                         <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
                             You aren't currently selling any equipment.

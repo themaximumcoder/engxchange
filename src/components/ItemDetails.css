@@ -115,12 +115,13 @@
 }
 
 .info-discount {
-    background: #10b981;
-    color: #fff;
+    background: #fef2f2;
+    color: #ef4444;
     padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: 1px solid #fee2e2;
 }
 
 .info-original-price {

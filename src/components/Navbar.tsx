@@ -26,11 +26,53 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
     return (
         <nav className="navbar">
             <div className="container nav-container">
-                <Link to="/" className="nav-brand">
-                    <img src="/website_logo.png" alt="engXchange Logo" className="nav-logo-img" />
-                </Link>
+                <div className="nav-top">
+                    <Link to="/" className="nav-brand">
+                        <img src="/website_logo.png" alt="engXchange Logo" className="nav-logo-img" />
+                    </Link>
 
-                <div className="nav-actions">
+                    <div className="nav-top-actions">
+                        {!isLoggedIn ? (
+                            <div className="auth-buttons">
+                                <button className="btn btn-outline btn-sm" onClick={() => navigate('/login')}>Log In</button>
+                                <button className="btn btn-outline btn-sm btn-signup" onClick={() => navigate('/register')}>Sign Up</button>
+                            </div>
+                        ) : (
+                            <div className="user-group">
+                                <div className="notification-bell" onClick={() => navigate('/notifications')}>
+                                    <span style={{ fontSize: '1.25rem' }}>🔔</span>
+                                    {notifications.filter(n => !n.read).length > 0 && (
+                                        <span className="notification-badge">
+                                            {notifications.filter(n => !n.read).length}
+                                        </span>
+                                    )}
+                                </div>
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} className="nav-avatar" />
+                                ) : (
+                                    <button className="btn btn-outline btn-sm" onClick={() => navigate('/profile')}>Profile</button>
+                                )}
+                                <button className="btn btn-outline btn-sm btn-logout" onClick={onLogoutClick}>Sign Out</button>
+                            </div>
+                        )}
+                        <Link to="/list" className="btn btn-primary list-btn">
+                            List an Item
+                        </Link>
+                    </div>
+                </div>
+
+                <div className="nav-bottom">
+                    <div className="nav-links-desktop">
+                        <Link to="/" className={`nav-link-secondary ${location.pathname === '/' ? 'active' : ''}`}>Marketplace</Link>
+                        <Link to="/forum" className={`nav-link-secondary ${location.pathname === '/forum' ? 'active' : ''}`}>Community</Link>
+                        {isLoggedIn && (
+                            <>
+                                <Link to="/inbox" className={`nav-link-secondary highlight-messages ${location.pathname === '/inbox' ? 'active' : ''}`}>Messages</Link>
+                                <Link to="/dashboard" className={`nav-link-secondary ${location.pathname === '/dashboard' ? 'active' : ''}`}>Dashboard</Link>
+                            </>
+                        )}
+                    </div>
+
                     <div className="search-group">
                         <input
                             type="text"
@@ -57,47 +99,6 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                                 ))}
                             </datalist>
                         )}
-                    </div>
-
-                    <div className="nav-right-group">
-                        <div className="nav-links-desktop">
-                            <Link to="/" className="nav-link-secondary">Marketplace</Link>
-                            <Link to="/forum" className="nav-link-secondary">Community</Link>
-                            {isLoggedIn && (
-                                <>
-                                    <Link to="/inbox" className="nav-link-secondary highlight-messages">Messages</Link>
-                                    <Link to="/dashboard" className="nav-link-secondary">Dashboard</Link>
-                                </>
-                            )}
-                        </div>
-
-                        {!isLoggedIn ? (
-                            <div className="auth-buttons">
-                                <button className="btn btn-outline btn-sm" onClick={() => navigate('/login')}>Log In</button>
-                                <button className="btn btn-outline btn-sm btn-signup" onClick={() => navigate('/register')}>Sign Up</button>
-                            </div>
-                        ) : (
-                            <div className="user-group">
-                                <div className="notification-bell" onClick={() => navigate('/notifications')}>
-                                    <span style={{ fontSize: '1.25rem' }}>🔔</span>
-                                    {notifications.filter(n => !n.read).length > 0 && (
-                                        <span className="notification-badge">
-                                            {notifications.filter(n => !n.read).length}
-                                        </span>
-                                    )}
-                                </div>
-                                {avatarUrl ? (
-                                    <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} className="nav-avatar" />
-                                ) : (
-                                    <button className="btn btn-outline btn-sm" onClick={() => navigate('/profile')}>Profile</button>
-                                )}
-                                <button className="btn btn-outline btn-sm btn-logout" onClick={onLogoutClick}>Sign Out</button>
-                            </div>
-                        )}
-
-                        <Link to="/list" className="btn btn-primary list-btn">
-                            List an Item
-                        </Link>
                     </div>
                 </div>
             </div>

@@ -615,7 +615,7 @@ function MainApp() {
           </ErrorBoundary>
         </main>
 
-        <Footer />
+        {!(location.pathname === '/inbox' && window.innerWidth < 768) && <Footer />}
 
         {session && (
           <nav className="mobile-nav">

@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 import type { Project } from '../types';
 
-export function Profile({ session }: { session: Session | null }) {
+export function Profile({ session, onProfileUpdate }: { session: Session | null, onProfileUpdate?: () => void }) {
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState('');
     const [university, setUniversity] = useState('');

@@ -67,6 +67,8 @@ export function MessagesInbox({
         onSendMessage(selectedContact, draft);
         setDraft('');
     };
+    const showSidebar = !isMobile || !selectedContact;
+    const showChat = !isMobile || !!selectedContact;
 
     return (
         <div style={{ 

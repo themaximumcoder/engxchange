@@ -270,8 +270,6 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
             <div className="item-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {item.origin && <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.85rem' }}>{item.origin}</span>}
-                    {item.degree && <span style={{ color: '#4b5563', fontSize: '0.85rem', fontStyle: 'italic' }}>{item.degree}</span>}
-                    {item.yearOfStudy && <span style={{ backgroundColor: badgeColor, color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{item.yearOfStudy}</span>}
                     {!!item.points && <span style={{ color: '#ca8a04', fontWeight: 'bold', fontSize: '0.85rem' }}>⭐ {item.points} pts</span>}
                 </div>
                 <span className="item-type">{item.type}</span>

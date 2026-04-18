@@ -218,11 +218,61 @@
 }
 
 @media (max-width: 640px) {
+    .feed-header h2 {
+        font-size: 1.25rem;
+    }
+
     .items-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
 
     .slider-item {
-        flex: 0 0 280px;
+        flex: 0 0 160px;
+    }
+
+    .item-title {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .item-desc {
+        display: none;
+    }
+
+    .item-image-container {
+        aspect-ratio: 1 / 1;
+    }
+
+    .item-header, .item-body, .item-footer, .item-actions {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .like-heart-button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        top: 8px;
+        right: 8px;
+    }
+
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .price-container span:first-child {
+        font-size: 1rem !important;
+    }
+
+    .price-container {
+        gap: 0.25rem !important;
+    }
+    
+    .item-type {
+        font-size: 0.55rem;
     }
 }

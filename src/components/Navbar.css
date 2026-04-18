@@ -1,7 +1,7 @@
 .navbar {
     background-color: var(--primary);
     border-bottom: 1px solid var(--border-color);
-    min-height: 80px;
+    min-height: 140px;
     height: auto;
     position: sticky;
     top: 0;
@@ -29,7 +29,7 @@
 }
 
 .nav-logo-img {
-    height: 50px;
+    height: 125px;
     object-fit: contain;
 }
 

@@ -530,7 +530,7 @@ function MainApp() {
           onSearchChange={setSearchQuery}
           locationFilter={locationFilter}
           onLocationFilterChange={setLocationFilter}
-          availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
+          availableLocations={UNIVERSITY_PRESETS.filter(u => items.some(item => item.origin === u.name)).map(u => u.name)}
           onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
           suggestions={items.map(i => i.title)}
           notifications={notifications}

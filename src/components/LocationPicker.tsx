@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
     Map,
-    Marker,
+    AdvancedMarker,
     useMap,
     useMapsLibrary,
     type MapMouseEvent,
@@ -58,14 +58,15 @@ function AutocompleteCustom({ onPlaceSelect }: { onPlaceSelect: (place: google.m
                 type="text"
                 placeholder="🔍 Search for a meetup spot or address..."
                 style={{
-                    width: '100%',
+                    width: 'calc(100% - 20px)',
                     padding: '12px 15px',
-                    borderRadius: '8px',
-                    border: '1px solid transparent',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
                     fontSize: '0.95rem',
                     outline: 'none',
-                    background: '#fff'
+                    background: '#fff',
+                    margin: '0 10px'
                 }}
             />
         </div>
@@ -108,13 +109,14 @@ export function LocationPicker({ initialLat, initialLng, onLocationChange, readO
         <div style={{ height: '350px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
             {!readOnly && <AutocompleteCustom onPlaceSelect={handlePlaceSelect} />}
             <Map
+                mapId="DEMO_MAP_ID"
                 center={markerLocation}
                 defaultZoom={15}
                 onClick={handleMapClick}
                 disableDefaultUI={readOnly}
                 gestureHandling={readOnly ? 'none' : 'auto'}
             >
-                <Marker position={markerLocation} />
+                <AdvancedMarker position={markerLocation} />
             </Map>
             {!readOnly && (
                 <div style={{ padding: '0.6rem 0.75rem', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b', borderTop: '1px solid #e2e8f0' }}>

@@ -34,11 +34,21 @@ export function Profile({ session }: { session: Session | null }) {
             if (!session?.user?.id) return;
             const { data } = await supabase.from('users').select('username, university, degree, year_of_study, profile_picture_url').eq('id', session.user.id).single();
             if (active && data) {
-                setUsername(data.username || '');
-                setUniversity(data.university || '');
-                setDegree(data.degree || '');
-                setYearOfStudy(data.year_of_study || '');
-                setProfilePictureUrl(data.profile_picture_url || '');
+                // If username is empty, use email prefix as a cute default
+                const defaultName = session.user.email?.split('@')[0] || '';
+                setUsername(data.username || defaultName);
+                // Default to Edinburgh if not set, following the user's base
+                setUniversity(data.university || 'University of Edinburgh');
+                setDegree(data.degree || 'Engineering');
+                setYearOfStudy(data.year_of_study || 'Year 1');
+                setProfilePictureUrl(data.profile_picture_url || '/avatars/robot.png');
+            } else if (active && session.user.email) {
+                // Fallback for brand new profiles
+                setUsername(session.user.email.split('@')[0]);
+                setUniversity('University of Edinburgh');
+                setDegree('Engineering');
+                setYearOfStudy('Year 1');
+                setProfilePictureUrl('/avatars/robot.png');
             }
             if (active) setLoading(false);
         };
@@ -56,7 +66,7 @@ export function Profile({ session }: { session: Session | null }) {
                 if (active) {
                     const uniqueNames = Array.from(new Set<string>(data.map((u: { name: string }) => u.name as string)));
                     uniqueNames.sort((a, b) => a.localeCompare(b));
-                    setUniversities(['University of Edinburgh', ...uniqueNames.filter(n => n !== 'University of Edinburgh')]);
+                    setUniversities(['University of Edinburgh', 'Heriot-Watt University', 'Edinburgh Napier University', ...uniqueNames.filter(n => !['University of Edinburgh', 'Heriot-Watt University', 'Edinburgh Napier University'].includes(n))]);
                     setFetchingUnis(false);
                 }
             } catch {
@@ -168,6 +178,42 @@ export function Profile({ session }: { session: Session | null }) {
                                 setLoading(false);
                             }
                         }} style={{ padding: '0.5rem', background: '#f1f5f9', borderRadius: '4px' }} />
+                        
+                        <div style={{ marginTop: '1.5rem' }}>
+                            <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#64748b', display: 'block', marginBottom: '0.75rem' }}>
+                                Or choose a funny engineering mascot:
+                            </label>
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                {[
+                                    { id: 'robot', path: '/avatars/robot.png' },
+                                    { id: 'sparky', path: '/avatars/sparky.png' },
+                                    { id: 'coggy', path: '/avatars/coggy.png' },
+                                    { id: 'strong', path: '/avatars/strong.png' }
+                                ].map(avatar => (
+                                    <button
+                                        key={avatar.id}
+                                        type="button"
+                                        onClick={async () => {
+                                            if (!session?.user?.id) return;
+                                            setProfilePictureUrl(avatar.path);
+                                            await supabase.from('users').update({ profile_picture_url: avatar.path }).eq('id', session.user.id);
+                                        }}
+                                        style={{
+                                            border: profilePictureUrl === avatar.path ? '3px solid #6366f1' : '3px solid transparent',
+                                            padding: '4px',
+                                            borderRadius: '50%',
+                                            background: 'none',
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s'
+                                        }}
+                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                        <img src={avatar.path} alt={avatar.id} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

@@ -36,8 +36,13 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: M
                         <span className="info-society">{item.society}</span>
                         {item.isSold && <span className="sold-badge">SOLD</span>}
                         <h1 className="info-title">{item.title}</h1>
-                        <p className="info-meta">
-                            Posted by {item.sellerEmail} • {new Date(item.createdAt).toLocaleDateString()}
+                        <p className="info-meta" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            {item.sellerAvatar ? (
+                                <img src={item.sellerAvatar} alt="Seller Avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>👤</div>
+                            )}
+                            <span>Posted by {item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer'} • {new Date(item.createdAt).toLocaleDateString()}</span>
                         </p>
                     </div>
 
@@ -52,7 +57,10 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: M
                                     </>
                                 )}
                                 {isStudentVerified && (
-                                    <span style={{ background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>Student Price Applied</span>
+                                    <span style={{ color: '#6366f1', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 600 }}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                        Student Price Applied
+                                    </span>
                                 )}
                             </div>
                         )}

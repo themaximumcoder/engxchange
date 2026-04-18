@@ -121,8 +121,8 @@ function MainApp() {
     const loadData = async () => {
       const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });
 
-      const { data: uData } = await supabase.from('users').select('email, university, degree, year_of_study, points');
-      const userMap = new Map(uData?.map((u: Record<string, unknown>) => [u.email as string, { uni: u.university as string, deg: u.degree as string, yr: u.year_of_study as string, pts: (u.points as number) || 0 }]) || []);
+      const { data: uData } = await supabase.from('users').select('email, university, degree, year_of_study, points, profile_picture_url, username');
+      const userMap = new Map(uData?.map((u: Record<string, unknown>) => [u.email as string, { uni: u.university as string, deg: u.degree as string, yr: u.year_of_study as string, pts: (u.points as number) || 0, avatar: u.profile_picture_url as string, name: u.username as string }]) || []);
 
       if (active && iData) {
         setItems(iData.map(row => {
@@ -132,6 +132,8 @@ function MainApp() {
           item.degree = u?.deg || '';
           item.yearOfStudy = u?.yr || '';
           item.points = u?.pts || 0;
+          item.sellerAvatar = u?.avatar || '';
+          item.sellerName = u?.name || '';
           return item;
         }));
       }
@@ -479,63 +481,98 @@ function MainApp() {
   );
 
 
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div className="app-container" style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        background: '#f8fafc',
+        fontFamily: 'sans-serif'
+      }}>
+        <div style={{ 
+          background: 'white', 
+          padding: '2.5rem', 
+          borderRadius: '16px', 
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+          textAlign: 'center',
+          maxWidth: '400px'
+        }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗺️</div>
+          <h2 style={{ color: '#1e293b', marginBottom: '0.5rem' }}>Maps Key Missing</h2>
+          <p style={{ color: '#64748b', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+            The Google Maps API key is not yet configured or recognized.
+          </p>
+          <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '8px', textAlign: 'left', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+            <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>.env</code>
+          </div>
+          <p style={{ color: '#475569', fontSize: '0.9rem' }}>
+            If you just added it, please <strong>restart your development server</strong> (stop with Ctrl+C and run <code>npm run dev</code>).
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
-    <div className="app-container">
-      <Helmet>
-        <title>engXchange | Engineering Marketplace & Forum</title>
-        <meta name="description" content="The premier decentralized marketplace and social forum for engineering students." />
-      </Helmet>
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places', 'marker']}>
+      <div className="app-container">
+        <Helmet>
+          <title>engXchange | Engineering Marketplace & Forum</title>
+          <meta name="description" content="The premier decentralized marketplace and social forum for engineering students." />
+        </Helmet>
 
-      <Navbar
-        isLoggedIn={!!session}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        locationFilter={locationFilter}
-        onLocationFilterChange={setLocationFilter}
-        availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
-        onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
-        suggestions={items.map(i => i.title)}
-        notifications={notifications}
-        avatarUrl={currentUserAvatar}
-      />
+        <Navbar
+          isLoggedIn={!!session}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          locationFilter={locationFilter}
+          onLocationFilterChange={setLocationFilter}
+          availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
+          onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
+          suggestions={items.map(i => i.title)}
+          notifications={notifications}
+          avatarUrl={currentUserAvatar}
+        />
 
-      <main className="main-content container">
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
-            <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} />} />
-            <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
-            <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
-            <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
-            <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
-            <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
-            <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
-            <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
-            <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} /></RequireAuth>} />
-            <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
-            <Route path="/update-password" element={<UpdatePassword />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/work" element={<WorkWithUsPage />} />
-          </Routes>
-        </ErrorBoundary>
-      </main>
+        <main className="main-content container">
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
+              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} />} />
+              <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
+              <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
+              <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
+              <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
+              <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
+              <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
+              <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
+              <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
+              <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} /></RequireAuth>} />
+              <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
+              <Route path="/update-password" element={<UpdatePassword />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/work" element={<WorkWithUsPage />} />
+            </Routes>
+          </ErrorBoundary>
+        </main>
 
-      <Footer />
+        <Footer />
 
-      {session && (
-        <nav className="mobile-nav">
-          <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>🏠</div>
-          <div onClick={() => navigate('/forum')} style={{ cursor: 'pointer' }}>💬</div>
-          <div onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }}>🔔</div>
-          <div onClick={() => navigate('/inbox')} style={{ cursor: 'pointer' }}>📬</div>
-          <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>👤</div>
-        </nav>
-      )}
-      <Analytics />
-    </div>
+        {session && (
+          <nav className="mobile-nav">
+            <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>🏠</div>
+            <div onClick={() => navigate('/forum')} style={{ cursor: 'pointer' }}>💬</div>
+            <div onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }}>🔔</div>
+            <div onClick={() => navigate('/inbox')} style={{ cursor: 'pointer' }}>📬</div>
+            <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>👤</div>
+          </nav>
+        )}
+        <Analytics />
+      </div>
     </APIProvider>
   );
 }

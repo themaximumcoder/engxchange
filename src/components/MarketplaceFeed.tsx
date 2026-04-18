@@ -210,7 +210,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
     };
     const badgeColor = item.yearOfStudy ? YEAR_COLORS[item.yearOfStudy] || '#6b7280' : '#6b7280';
     const isSaved = savedItems.includes(item.id);
-    const sellerUsername = item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineering Student';
+    const sellerUsername = item.sellerName || (item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer');
 
     const baseSellingPrice = item.sellingPrice;
     const hasStudentDiscount = isStudentVerified && baseSellingPrice !== undefined && baseSellingPrice > 0;
@@ -280,7 +280,12 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
 
             <div className="item-body" style={{ flexGrow: 1 }}>
                 <h3 className="item-title">{item.title}</h3>
-                <small style={{ color: '#888', display: 'block', marginBottom: '8px' }}>
+                <small style={{ color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {item.sellerAvatar ? (
+                        <img src={item.sellerAvatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                        <span style={{ fontSize: '14px' }}>👤</span>
+                    )}
                     By {sellerUsername} &bull; {getTimeAgo(item.createdAt)}
                 </small>
                 <p className="item-desc">{item.description}</p>
@@ -303,7 +308,10 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                             </div>
                         )}
                         {hasStudentDiscount && (
-                            <span style={{ background: '#10b981', marginLeft: 'auto', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Student</span>
+                            <span style={{ color: '#6366f1', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', fontWeight: 700 }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                Student
+                            </span>
                         )}
                     </div>
                 )}

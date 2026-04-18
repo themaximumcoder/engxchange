@@ -39,6 +39,8 @@ export interface MarketplaceItem {
     degree?: string;
     yearOfStudy?: string;
     points?: number;
+    sellerAvatar?: string;
+    sellerName?: string;
 }
 
 export interface ForumPost {

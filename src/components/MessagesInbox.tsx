@@ -50,15 +50,22 @@ export function MessagesInbox({
         }
     }, [selectedContact, messages.length, onMarkAsRead]);
 
-    // Compute unique contacts based on sender/receiver history
+    // Compute unique contacts based on sender/receiver history (Normalized to lowercase)
     const contacts = Array.from(new Set([
-        ...messages.map(m => m.senderEmail === currentUserEmail ? m.receiverEmail : m.senderEmail),
-        ...(selectedContact ? [selectedContact] : [])
-    ]));
+        ...messages.map(m => (m.senderEmail?.toLowerCase() === currentUserEmail.toLowerCase() ? m.receiverEmail : m.senderEmail)?.toLowerCase()),
+        ...(selectedContact ? [selectedContact.toLowerCase()] : [])
+    ])).filter(Boolean) as string[];
 
     const conversation = messages
-        .filter(m => (m.senderEmail === currentUserEmail && m.receiverEmail === selectedContact) ||
-            (m.receiverEmail === currentUserEmail && m.senderEmail === selectedContact))
+        .filter(m => {
+            const sender = m.senderEmail?.toLowerCase();
+            const receiver = m.receiverEmail?.toLowerCase();
+            const current = currentUserEmail.toLowerCase();
+            const selected = selectedContact?.toLowerCase();
+            
+            return (sender === current && receiver === selected) ||
+                   (receiver === current && sender === selected);
+        })
         .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     const handleSend = (e: React.FormEvent) => {
@@ -73,13 +80,14 @@ export function MessagesInbox({
     return (
         <div style={{ 
             display: 'flex', 
-            height: isMobile ? 'calc(100vh - 175px)' : '750px', 
+            height: isMobile ? 'calc(100vh - 220px)' : '750px', 
             background: '#fff', 
             borderRadius: isMobile ? '0' : '16px', 
             border: isMobile ? 'none' : '1px solid #e5e7eb', 
             overflow: 'hidden',
             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-            margin: isMobile ? '-1rem -0.5rem' : '0'
+            zIndex: 1, /* Keep below navigation bars */
+            margin: '0'
         }}>
             {/* CONTACTS SIDEBAR */}
             {showSidebar && (
@@ -107,17 +115,17 @@ export function MessagesInbox({
                                     style={{ 
                                         padding: '1.25rem 1.5rem', 
                                         cursor: 'pointer', 
-                                        background: selectedContact === c ? '#fff' : 'transparent', 
+                                        background: selectedContact?.toLowerCase() === c.toLowerCase() ? '#fff' : 'transparent', 
                                         borderBottom: '1px solid #f1f5f9', 
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '12px',
-                                        borderLeft: selectedContact === c ? '4px solid #2563eb' : '4px solid transparent'
+                                        borderLeft: selectedContact?.toLowerCase() === c.toLowerCase() ? '4px solid #2563eb' : '4px solid transparent'
                                     }}
                                 >
                                     <div style={{ minWidth: 0 }}>
-                                        <div style={{ color: '#1e293b', fontSize: '1rem', fontWeight: selectedContact === c ? 800 : 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c}</div>
+                                        <div style={{ color: '#1e293b', fontSize: '1rem', fontWeight: selectedContact?.toLowerCase() === c.toLowerCase() ? 800 : 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c}</div>
                                         <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Active connection</div>
                                     </div>
                                 </div>
@@ -158,7 +166,7 @@ export function MessagesInbox({
                             {/* MESSAGES SCROLL AREA */}
                             <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#f8fafc' }}>
                                 {conversation.map(m => {
-                                    const isMine = m.senderEmail === currentUserEmail;
+                                    const isMine = m.senderEmail?.toLowerCase() === currentUserEmail.toLowerCase();
                                     const linkedItem = m.itemId ? marketplaceItems.find(i => i.id === m.itemId) : null;
 
                                     return (

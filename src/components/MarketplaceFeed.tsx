@@ -208,7 +208,6 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
         'Master': '#ef4444',
         'PhD': '#eab308'
     };
-    const badgeColor = item.yearOfStudy ? YEAR_COLORS[item.yearOfStudy] || '#6b7280' : '#6b7280';
     const isSaved = savedItems.includes(item.id);
     const sellerUsername = item.sellerName || (item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer');
 

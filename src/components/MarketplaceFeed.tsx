@@ -99,7 +99,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                     <div className="slider-container">
                         {hotItems.map((item) => (
                             <div key={item.id} className="slider-item">
-                                <ItemCard item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                                <ItemCard item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                             </div>
                         ))}
                     </div>
@@ -145,7 +145,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                 ) : (
                     <div className="items-grid">
                         {displayItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                            <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                         ))}
                     </div>
                 )}
@@ -174,7 +174,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
 
                     <div className="items-grid">
                         {sortRecruitItems(recruitingItems).map((item) => (
-                            <ItemCard key={item.id} item={item} isStudentVerified={isStudentVerified} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                            <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
                         ))}
                     </div>
                 </div>

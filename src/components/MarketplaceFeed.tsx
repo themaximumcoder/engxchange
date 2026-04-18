@@ -287,7 +287,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
             <div className="item-footer">
                 {item.type !== 'Recruiting' && (
                     <div className="price-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.25rem' }}>
+                        <span style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '1.25rem' }}>
                             £{sellingPrice.toFixed(2)}
                         </span>
                         {hasDiscount && (

@@ -84,7 +84,7 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
                     <div className="info-price-section">
                         {item.type !== 'Recruiting' && (
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap' }}>
-                                <span className="info-selling-price">£{sellingPrice.toFixed(2)}</span>
+                                <span className="info-selling-price" style={{ color: '#16a34a' }}>£{sellingPrice.toFixed(2)}</span>
                                 {hasDiscount && (
                                     <>
                                         <span className="info-discount" style={{ color: '#ef4444', fontWeight: 'bold' }}>-{discountPercent}% OFF</span>

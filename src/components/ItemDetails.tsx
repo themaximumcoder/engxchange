@@ -23,12 +23,11 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
         navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: "🔄 Trade Proposal", itemId: offeredItemId } });
     };
 
-    const basePrice = item.sellingPrice || 0;
-    const finalPrice = isStudentVerified && basePrice > 0 ? basePrice * 0.9 : basePrice;
-    const hasDiscount = !!(item.originalPrice && finalPrice < item.originalPrice);
+    const sellingPrice = item.sellingPrice || 0;
+    const hasDiscount = !!(item.originalPrice && sellingPrice < item.originalPrice);
 
     const discountPercent = hasDiscount
-        ? Math.round(((item.originalPrice! - finalPrice) / item.originalPrice!) * 100)
+        ? Math.round(((item.originalPrice! - sellingPrice) / item.originalPrice!) * 100)
         : 0;
 
     return (
@@ -85,18 +84,12 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
                     <div className="info-price-section">
                         {item.type !== 'Recruiting' && (
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap' }}>
-                                <span className="info-selling-price">£{finalPrice.toFixed(2)}</span>
+                                <span className="info-selling-price">£{sellingPrice.toFixed(2)}</span>
                                 {hasDiscount && (
                                     <>
                                         <span className="info-discount" style={{ color: '#ef4444', fontWeight: 'bold' }}>-{discountPercent}% OFF</span>
                                         <span className="info-original-price">£{item.originalPrice?.toFixed(2)}</span>
                                     </>
-                                )}
-                                {isStudentVerified && (
-                                    <span style={{ color: '#6366f1', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 600 }}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                                        Student Price Applied
-                                    </span>
                                 )}
                             </div>
                         )}

@@ -41,7 +41,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
 
         // Validation
         if (type !== 'Recruiting' && op > 0 && sp > op) {
-            setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please reduce the price to offer a student discount.`);
+            setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please offer a fair price to your fellow engineers.`);
             return;
         }
 

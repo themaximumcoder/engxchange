@@ -58,7 +58,12 @@ export function ForumFeed({ posts, projects = [], comments, userVotes, onCreateP
                                     <div className="post-content" style={{ flex: 1 }}>
                                         <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1.25rem' }}>{post.title}</h3>
                                         <p style={{ fontSize: '0.85rem', color: '#888', marginBottom: '1rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                            Posted by {post.authorEmail}
+                                            {post.authorAvatar ? (
+                                                <img src={post.authorAvatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <span style={{ fontSize: '16px' }}>👤</span>
+                                            )}
+                                            Posted by {post.authorName || (post.authorEmail ? post.authorEmail.split('@')[0] : 'Engineer')}
                                             {post.origin && <span style={{ color: '#2563eb', fontWeight: 600 }}>{post.origin}</span>}
                                             {post.degree && <span style={{ color: '#4b5563', fontStyle: 'italic' }}>{post.degree}</span>}
                                             {post.yearOfStudy && <span style={{ backgroundColor: badgeColor, color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{post.yearOfStudy}</span>}

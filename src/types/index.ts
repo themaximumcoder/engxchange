@@ -58,6 +58,8 @@ export interface ForumPost {
     stlFileName?: string;
     tags?: string[];
     points?: number;
+    authorName?: string;
+    authorAvatar?: string;
 }
 
 export interface Comment {

@@ -143,6 +143,8 @@ function MainApp() {
         post.degree = u?.deg || '';
         post.yearOfStudy = u?.yr || '';
         post.points = u?.pts || 0;
+        post.authorName = u?.name || '';
+        post.authorAvatar = u?.avatar || '';
         return post as ForumPost;
       }));
     }

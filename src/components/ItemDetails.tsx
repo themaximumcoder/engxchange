@@ -42,7 +42,7 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: M
                             ) : (
                                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>👤</div>
                             )}
-                            <span>Posted by {item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer'} • {new Date(item.createdAt).toLocaleDateString()}</span>
+                            <span>Posted by {item.sellerName || (item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer')} • {new Date(item.createdAt).toLocaleDateString()}</span>
                         </p>
                     </div>
 

@@ -52,11 +52,16 @@ function HeroCarousel() {
 export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
+    const [hideSold, setHideSold] = useState(false);
 
     // 1. Partition Data
     const hotItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
     const recruitingItems = items.filter(i => i.type === 'Recruiting');
     let standardItems = items.filter(i => i.type !== 'Recruiting');
+
+    if (hideSold) {
+        standardItems = standardItems.filter(i => !i.isSold);
+    }
 
     // 2. Apply Filters & Sorting to standard items
     if (locationFilter !== 'all') {
@@ -120,6 +125,16 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
                                 <option value="price-high">Price: High to Low</option>
                                 <option value="a-z">Name (A-Z)</option>
                             </select>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', alignSelf: 'flex-end', paddingBottom: '0.75rem' }}>
+                            <input 
+                                type="checkbox" 
+                                id="hideSold" 
+                                checked={hideSold} 
+                                onChange={e => setHideSold(e.target.checked)} 
+                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                            />
+                            <label htmlFor="hideSold" style={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151', cursor: 'pointer' }}>Hide Sold Items</label>
                         </div>
                     </div>
                 </div>
@@ -256,13 +271,16 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
 
             <div className="item-body" style={{ flexGrow: 1 }}>
                 <h3 className="item-title">{item.title}</h3>
-                <small style={{ color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <small style={{ color: '#888', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {item.sellerAvatar ? (
-                        <img src={item.sellerAvatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={item.sellerAvatar} alt="" style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #e5e7eb' }} />
                     ) : (
-                        <span style={{ fontSize: '14px' }}>👤</span>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>👤</div>
                     )}
-                    By {sellerUsername} &bull; {getTimeAgo(item.createdAt)}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontWeight: 600, color: '#374151' }}>{sellerUsername}</span>
+                        <span style={{ fontSize: '0.75rem' }}>{getTimeAgo(item.createdAt)}</span>
+                    </div>
                 </small>
                 <p className="item-desc">{item.description}</p>
             </div>

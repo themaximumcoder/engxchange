@@ -6,7 +6,6 @@ import './MarketplaceFeed.css';
 
 interface MarketplaceFeedProps {
     items: MarketplaceItem[];
-    isStudentVerified: boolean;
     isLoggedIn?: boolean;
     onReport?: (id: string, type: string, reason: string) => void;
     onLikeItem: (id: string) => void;
@@ -49,7 +48,7 @@ function HeroCarousel() {
     );
 }
 
-export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems }: MarketplaceFeedProps) {
+export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
     const [hideSold, setHideSold] = useState(false);
@@ -185,7 +184,7 @@ export function MarketplaceFeed({ items, isStudentVerified, isLoggedIn = false, 
 }
 
 
-function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isStudentVerified: boolean; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
+function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
     const isRecruit = item.type === 'Recruiting';

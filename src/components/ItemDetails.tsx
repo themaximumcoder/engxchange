@@ -5,7 +5,7 @@ import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 
-export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserEmail }: { items: MarketplaceItem[], isLoggedIn: boolean, isStudentVerified: boolean, currentUserEmail: string }) {
+export function ItemDetails({ items, isLoggedIn, currentUserEmail }: { items: MarketplaceItem[], isLoggedIn: boolean, currentUserEmail: string }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const item = items.find(i => i.id === id);

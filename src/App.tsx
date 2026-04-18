@@ -309,8 +309,6 @@ function MainApp() {
   }, [session]);
 
   const currentUserEmail = session?.user?.email || '';
-  const isStudentVerified = currentUserEmail.trim().toLowerCase().endsWith('.ac.uk') ||
-    currentUserEmail.trim().toLowerCase().endsWith('.edu');
 
   const handleToggleSold = async (id: string, isSold: boolean) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, isSold } : item));
@@ -597,8 +595,8 @@ function MainApp() {
         <main className="main-content container">
           <ErrorBoundary>
             <Routes>
-              <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
-              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} currentUserEmail={currentUserEmail} />} />
+              <Route path="/" element={<MarketplaceFeed items={filteredItems} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
+              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} currentUserEmail={currentUserEmail} />} />
               <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
               <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />

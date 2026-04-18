@@ -166,7 +166,7 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                         <label style={{ fontWeight: 600 }}>Profile Picture</label>
                         {profilePictureUrl && (
                             <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
-                                <img src={profilePictureUrl} alt="Preview" style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '50%', border: '4px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                <img src={profilePictureUrl} alt="Preview" style={{ width: '180px', height: '180px', objectFit: 'cover', borderRadius: '50%', border: '4px solid #fff', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                             </div>
                         )}
                         <input type="file" accept="image/*" onChange={async (e) => {
@@ -218,7 +218,7 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                                         onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
                                         onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                                     >
-                                        <img src={avatar.path} alt={avatar.id} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+                                        <img src={avatar.path} alt={avatar.id} style={{ width: '85px', height: '85px', borderRadius: '50%', objectFit: 'cover' }} />
                                     </button>
                                 ))}
                             </div>

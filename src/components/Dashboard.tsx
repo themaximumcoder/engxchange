@@ -133,7 +133,7 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
         <div className="dashboard-container">
             <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>Personal Terminal</h1>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem', color: '#000' }}>Engineering Gear & Equipment</h1>
                     <p>Orchestrate your engineering listings and project recruitment.</p>
                 </div>
                 <div className="score-badge">

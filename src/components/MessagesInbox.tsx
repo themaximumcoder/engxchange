@@ -16,7 +16,10 @@ export function MessagesInbox({
     onMarkAsRead?: (senderEmail: string) => void,
     marketplaceItems?: MarketplaceItem[]
 }) {
+    const [selectedContact, setSelectedContact] = useState<string | null>(null);
+    const [draft, setDraft] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const location = useLocation() as { state: { newContact?: string, draftMessage?: string, itemId?: string } | null };
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);

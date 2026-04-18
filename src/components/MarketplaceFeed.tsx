@@ -193,13 +193,10 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
     const isSaved = savedItems.includes(item.id);
     const sellerUsername = item.sellerName || (item.sellerEmail ? item.sellerEmail.split('@')[0] : 'Engineer');
 
-    const baseSellingPrice = item.sellingPrice;
-    const hasStudentDiscount = isStudentVerified && baseSellingPrice !== undefined && baseSellingPrice > 0;
-    const finalSellingPrice = hasStudentDiscount ? baseSellingPrice * 0.9 : baseSellingPrice;
-
-    const hasDiscount = !!(item.originalPrice && finalSellingPrice && item.originalPrice > finalSellingPrice);
+    const sellingPrice = item.sellingPrice || 0;
+    const hasDiscount = !!(item.originalPrice && sellingPrice < item.originalPrice);
     const discountPercent = hasDiscount
-        ? Math.round(((item.originalPrice! - finalSellingPrice!) / item.originalPrice!) * 100)
+        ? Math.round(((item.originalPrice! - sellingPrice) / item.originalPrice!) * 100)
         : 0;
 
     const renderDeliveryBadge = () => {
@@ -291,7 +288,7 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                 {item.type !== 'Recruiting' && (
                     <div className="price-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.25rem' }}>
-                            £{finalSellingPrice?.toFixed(2) || '0.00'}
+                            £{sellingPrice.toFixed(2)}
                         </span>
                         {hasDiscount && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -302,12 +299,6 @@ function ItemCard({ item, isStudentVerified, isLoggedIn, onReport, onLikeItem, s
                                     £{item.originalPrice?.toFixed(2)}
                                 </span>
                             </div>
-                        )}
-                        {hasStudentDiscount && (
-                            <span style={{ color: '#6366f1', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', fontWeight: 700 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                                Student
-                            </span>
                         )}
                     </div>
                 )}

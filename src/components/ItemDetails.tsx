@@ -1,14 +1,26 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 
-export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: MarketplaceItem[], isLoggedIn: boolean, isStudentVerified: boolean }) {
+export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserEmail }: { items: MarketplaceItem[], isLoggedIn: boolean, isStudentVerified: boolean, currentUserEmail: string }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const item = items.find(i => i.id === id);
 
     if (!item) return <div style={{ padding: '4rem', textAlign: 'center' }}><h2>Item not found</h2><button className="btn btn-outline" onClick={() => navigate('/')}>Back to Feed</button></div>;
+    
+    const [isTradeSelectorOpen, setIsTradeSelectorOpen] = useState(false);
+    const myItems = items.filter(i => i.sellerEmail === currentUserEmail && !i.isSold && i.id !== item.id);
+
+    const handleProposeTrade = (offeredItemId: string) => {
+        const offeredItem = myItems.find(i => i.id === offeredItemId);
+        if (!offeredItem) return;
+
+        const tradeMsg = `Hey! I'm interested in trading your "${item.title}" for my "${offeredItem.title}". Check out my gear here: https://engxchange.com/item/${offeredItem.id}`;
+        navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: tradeMsg } });
+    };
 
     const basePrice = item.sellingPrice || 0;
     const finalPrice = isStudentVerified && basePrice > 0 ? basePrice * 0.9 : basePrice;
@@ -132,9 +144,56 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified }: { items: M
                                         WhatsApp Seller
                                     </a>
                                 )}
+                                {(item.transactionMode === 'trade' || item.transactionMode === 'both') && (
+                                    <button 
+                                        className="btn btn-outline" 
+                                        style={{ width: '100%', padding: '1.25rem', fontSize: '1.1rem', marginTop: '0.5rem', border: '2px solid #6366f1', color: '#6366f1' }}
+                                        onClick={() => {
+                                            if (!isLoggedIn) {
+                                                alert("Please sign in to propose a trade.");
+                                            } else {
+                                                setIsTradeSelectorOpen(true);
+                                            }
+                                        }}
+                                    >
+                                        🤝 Propose Trade Exchange
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>
+
+                    {isTradeSelectorOpen && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+                            <div style={{ background: '#fff', padding: '2rem', borderRadius: '16px', maxWidth: '450px', width: '100%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+                                <h3 style={{ marginBottom: '1rem' }}>Propose an Exchange</h3>
+                                <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Select which of your active listings you'd like to offer in exchange for <strong>{item.title}</strong>:</p>
+                                
+                                {myItems.length === 0 ? (
+                                    <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '8px', textAlign: 'center', marginBottom: '1.5rem' }}>
+                                        <p style={{ color: '#64748b', marginBottom: '1rem' }}>You don't have any gear listed yet!</p>
+                                        <button className="btn btn-primary" onClick={() => navigate('/list')}>List an Item Now</button>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                                        {myItems.map(mi => (
+                                            <div 
+                                                key={mi.id} 
+                                                onClick={() => handleProposeTrade(mi.id)}
+                                                style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '1rem' }}
+                                                onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+                                                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                                            >
+                                                {mi.imageUrl ? <img src={mi.imageUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} alt="" /> : <div style={{ width: '40px', height: '40px', background: '#f1f5f9', borderRadius: '4px' }} />}
+                                                <span style={{ fontWeight: 600 }}>{mi.title}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <button className="btn btn-outline" style={{ width: '100%' }} onClick={() => setIsTradeSelectorOpen(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

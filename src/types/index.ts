@@ -41,6 +41,7 @@ export interface MarketplaceItem {
     points?: number;
     sellerAvatar?: string;
     sellerName?: string;
+    transactionMode?: 'sell' | 'trade' | 'both';
 }
 
 export interface ForumPost {

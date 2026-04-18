@@ -22,6 +22,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
     const [meetupLng, setMeetupLng] = useState<number | undefined>(initialData?.meetupLng);
     const [originalPrice, setOriginalPrice] = useState<string>(initialData?.originalPrice?.toString() || '');
     const [sellingPrice, setSellingPrice] = useState<string>(initialData?.sellingPrice?.toString() || '');
+    const [transactionMode, setTransactionMode] = useState<'sell' | 'trade' | 'both'>(initialData?.transactionMode || 'sell');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [sellerEmail, setSellerEmail] = useState(initialData?.sellerEmail || '');
     const [sellerPhone, setSellerPhone] = useState(initialData?.sellerPhone || '');
@@ -79,7 +80,8 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
             meetupLat: meetupLat,
             meetupLng: meetupLng,
             views: initialData?.views || 0,
-            isSold: initialData?.isSold || false
+            isSold: initialData?.isSold || false,
+            transactionMode: transactionMode
         });
         setUploading(false);
     };
@@ -119,6 +121,15 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                     </div>
 
                     <div className="form-group">
+                        <label>Exchange Preference</label>
+                        <select value={transactionMode} onChange={e => setTransactionMode(e.target.value as any)}>
+                            <option value="sell">Cash Only (Sell)</option>
+                            <option value="trade">Exchange/Trade Only</option>
+                            <option value="both">Open to Both (Sell or Trade)</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
                         <label>Description</label>
                         <textarea
                             required
@@ -141,7 +152,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                             </div>
                             <div className="form-group">
                                 <label>Selling Price (£)</label>
-                                <input type="number" min="0" step="0.01" required value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} />
+                                <input type="number" min="0" step="0.01" required={transactionMode !== 'trade'} value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder={transactionMode === 'trade' ? 'Optional' : ''} />
                             </div>
                         </div>
                     )}

@@ -50,7 +50,8 @@ const mapItemFromDB = (row: Record<string, unknown>): MarketplaceItem => ({
   sellerPhone: row.seller_phone as string | undefined,
   views: row.views as number | undefined,
   createdAt: row.created_at as string,
-  isSold: row.is_sold as boolean | undefined
+  isSold: row.is_sold as boolean | undefined,
+  transactionMode: row.transaction_mode as 'sell' | 'trade' | 'both' | undefined
 });
 
 const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
@@ -67,7 +68,8 @@ const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
   meetup_lng: item.meetupLng,
   seller_email: item.sellerEmail || 'student@ed.ac.uk',
   seller_phone: item.sellerPhone,
-  is_sold: item.isSold || false
+  is_sold: item.isSold || false,
+  transaction_mode: item.transactionMode
 });
 
 const mapPostFromDB = (row: Record<string, unknown>): ForumPost => ({
@@ -537,7 +539,7 @@ function MainApp() {
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<MarketplaceFeed items={filteredItems} isStudentVerified={isStudentVerified} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
-              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} />} />
+              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} currentUserEmail={currentUserEmail} />} />
               <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
               <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />

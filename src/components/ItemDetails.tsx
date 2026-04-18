@@ -19,8 +19,7 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
         const offeredItem = myItems.find(i => i.id === offeredItemId);
         if (!offeredItem) return;
 
-        const tradeMsg = `Hey! I'm interested in trading your "${item.title}" for my "${offeredItem.title}". Check out my gear here: https://engxchange.com/item/${offeredItem.id}`;
-        navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: tradeMsg } });
+        navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: "🔄 Trade Proposal", itemId: offeredItemId } });
     };
 
     const basePrice = item.sellingPrice || 0;
@@ -136,7 +135,7 @@ export function ItemDetails({ items, isLoggedIn, isStudentVerified, currentUserE
                                         if (!isLoggedIn) {
                                             alert("Please sign in to message sellers.");
                                         } else {
-                                            navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: `Hey! I'm interested in "${item.title}". Is it still available?` } });
+                                            navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: `Hey! I'm interested in "${item.title}". Is it still available?`, itemId: item.id } });
                                         }
                                     }}
                                 >

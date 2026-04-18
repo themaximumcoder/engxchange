@@ -215,7 +215,14 @@ function MainApp() {
         .order('created_at', { ascending: true });
       if (active && mData) {
         setMessages(mData.map((r: Record<string, unknown>) => ({
-          id: r.id as string, senderEmail: r.sender_email as string, receiverEmail: r.receiver_email as string, content: r.content as string, read: r.read as boolean, createdAt: r.created_at as string
+          id: r.id as string, 
+          senderEmail: r.sender_email as string, 
+          receiverEmail: r.receiver_email as string, 
+          content: r.content as string, 
+          read: r.read as boolean, 
+          itemId: r.item_id as string,
+          readAt: r.read_at as string,
+          createdAt: r.created_at as string
         })));
       }
 
@@ -229,10 +236,28 @@ function MainApp() {
           const r = payload.new;
           if (r.sender_email === session.user.email || r.receiver_email === session.user.email) {
             setMessages(prev => [...prev.filter(m => m.id !== r.id), {
-              id: r.id as string, senderEmail: r.sender_email as string, receiverEmail: r.receiver_email as string, content: r.content as string, read: r.read as boolean, createdAt: r.created_at as string
+              id: r.id as string, 
+              senderEmail: r.sender_email as string, 
+              receiverEmail: r.receiver_email as string, 
+              content: r.content as string, 
+              read: r.read as boolean, 
+              itemId: r.item_id as string,
+              readAt: r.read_at as string,
+              createdAt: r.created_at as string
             }]);
           }
-        }).subscribe();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, payload => {
+          const r = payload.new;
+          if (r.sender_email === session.user.email || r.receiver_email === session.user.email) {
+            setMessages(prev => prev.map(m => m.id === r.id ? {
+              ...m,
+              read: r.read as boolean,
+              readAt: r.read_at as string
+            } : m));
+          }
+        })
+        .subscribe();
 
       notifSub = supabase.channel('realtime-notifications')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, payload => {
@@ -409,12 +434,25 @@ function MainApp() {
     }
   };
 
-  const handleSendMessage = async (receiver: string, content: string) => {
+  const handleSendMessage = async (receiver: string, content: string, itemId?: string) => {
     if (!session) return;
-    const payload = { sender_email: session.user.email, receiver_email: receiver, content };
+    const payload = { 
+      sender_email: session.user.email, 
+      receiver_email: receiver, 
+      content,
+      item_id: itemId || null
+    };
     const { data, error } = await supabase.from('messages').insert([payload]).select();
     if (!error && data && data.length > 0) {
-      const newMsg = { id: data[0].id, senderEmail: data[0].sender_email, receiverEmail: data[0].receiver_email, content: data[0].content, read: data[0].read, createdAt: data[0].created_at };
+      const newMsg = { 
+        id: data[0].id, 
+        senderEmail: data[0].sender_email, 
+        receiverEmail: data[0].receiver_email, 
+        content: data[0].content, 
+        read: data[0].read, 
+        itemId: data[0].item_id,
+        createdAt: data[0].created_at 
+      };
       setMessages(prev => [...prev, newMsg]);
       
       // Send in-app notification
@@ -423,6 +461,25 @@ function MainApp() {
       // Trigger email notification
       sendEmailNotification(receiver, session.user.email!, content);
     }
+  };
+
+  const handleMarkMessagesAsRead = async (senderEmail: string) => {
+    if (!session?.user?.email) return;
+    const now = new Date().toISOString();
+    
+    // Update local state first for snapiness
+    setMessages(prev => prev.map(m => 
+      (m.senderEmail === senderEmail && m.receiverEmail === session.user.email && !m.read)
+        ? { ...m, read: true, readAt: now }
+        : m
+    ));
+
+    // Update DB
+    await supabase.from('messages')
+      .update({ read: true, read_at: now })
+      .eq('sender_email', senderEmail)
+      .eq('receiver_email', session.user.email)
+      .eq('read', false);
   };
 
   const handleReport = async (itemId: string, itemType: string, reason: string) => {
@@ -542,7 +599,7 @@ function MainApp() {
               <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} isStudentVerified={isStudentVerified} currentUserEmail={currentUserEmail} />} />
               <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
               <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
-              <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} /></RequireAuth>} />
+              <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
               <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
               <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />

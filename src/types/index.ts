@@ -80,6 +80,8 @@ export interface Message {
     read: boolean;
     createdAt: string;
     points?: number;
+    itemId?: string;
+    readAt?: string;
 }
 
 export interface Notification {

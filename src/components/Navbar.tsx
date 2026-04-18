@@ -24,27 +24,27 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
     const placeholderText = isForum ? "Search forum conversations..." : "Search items for sale...";
 
     return (
-        <nav className="navbar" style={{ height: '140px' }}>
-            <div className="container nav-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '1rem', padding: '0 0.5rem' }}>
-                <Link to="/" className="nav-brand" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', marginLeft: '-15px', transform: 'translateY(-10px)' }}>
-                    <img src="/website_logo.png" alt="engXchange Logo" style={{ height: '112px', objectFit: 'contain' }} />
+        <nav className="navbar">
+            <div className="container nav-container">
+                <Link to="/" className="nav-brand">
+                    <img src="/website_logo.png" alt="engXchange Logo" className="nav-logo-img" />
                 </Link>
 
-                <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                    <div className="search-group" style={{ display: 'flex', gap: '0.5rem', flex: 1, maxWidth: '480px' }}>
+                <div className="nav-actions">
+                    <div className="search-group">
                         <input
                             type="text"
                             list="search-suggestions"
                             placeholder={placeholderText}
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            style={{ padding: '0.65rem 0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', flex: 2, minWidth: '120px', fontSize: '0.95rem', color: '#374151', outline: 'none' }}
+                            className="search-input"
                         />
                         {availableLocations && availableLocations.length > 0 && (
                             <select
                                 value={locationFilter}
                                 onChange={(e) => onLocationFilterChange?.(e.target.value)}
-                                style={{ padding: '0.6rem', borderRadius: '8px', border: '1px solid #d1d5db', flex: 1, maxWidth: '160px', fontSize: '0.85rem', color: '#374151', cursor: 'pointer', outline: 'none', background: '#fff' }}
+                                className="location-select"
                             >
                                 <option value="all">All Locations</option>
                                 {availableLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
@@ -59,43 +59,43 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                         )}
                     </div>
 
-                    <div className="nav-right-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: 'auto' }}>
-                        <div className="nav-links-desktop" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', borderRight: '1px solid #e5e7eb', paddingRight: '0.75rem' }}>
-                            <Link to="/" className="nav-link-secondary" style={{ fontSize: '0.9rem' }}>Marketplace</Link>
-                            <Link to="/forum" className="nav-link-secondary" style={{ fontSize: '0.9rem' }}>Community</Link>
+                    <div className="nav-right-group">
+                        <div className="nav-links-desktop">
+                            <Link to="/" className="nav-link-secondary">Marketplace</Link>
+                            <Link to="/forum" className="nav-link-secondary">Community</Link>
                             {isLoggedIn && (
                                 <>
-                                    <Link to="/inbox" className="nav-link-secondary" style={{ color: '#10b981', fontSize: '0.9rem' }}>Messages</Link>
-                                    <Link to="/dashboard" className="nav-link-secondary" style={{ fontSize: '0.9rem' }}>Dashboard</Link>
+                                    <Link to="/inbox" className="nav-link-secondary highlight-messages">Messages</Link>
+                                    <Link to="/dashboard" className="nav-link-secondary">Dashboard</Link>
                                 </>
                             )}
                         </div>
 
                         {!isLoggedIn ? (
-                            <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }} onClick={() => navigate('/login')}>Log In</button>
-                                <button className="btn btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', borderColor: '#6366f1', color: '#6366f1', fontWeight: 'bold' }} onClick={() => navigate('/register')}>Sign Up</button>
+                            <div className="auth-buttons">
+                                <button className="btn btn-outline btn-sm" onClick={() => navigate('/login')}>Log In</button>
+                                <button className="btn btn-outline btn-sm btn-signup" onClick={() => navigate('/register')}>Sign Up</button>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <div style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/notifications')}>
+                            <div className="user-group">
+                                <div className="notification-bell" onClick={() => navigate('/notifications')}>
                                     <span style={{ fontSize: '1.25rem' }}>🔔</span>
                                     {notifications.filter(n => !n.read).length > 0 && (
-                                        <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', fontSize: '0.6rem', fontWeight: 'bold', padding: '0.1rem 0.3rem', borderRadius: '50%' }}>
+                                        <span className="notification-badge">
                                             {notifications.filter(n => !n.read).length}
                                         </span>
                                     )}
                                 </div>
                                 {avatarUrl ? (
-                                    <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} style={{ width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', objectFit: 'cover', border: '1.5px solid #2563eb' }} />
+                                    <img src={avatarUrl} alt="Profile" onClick={() => navigate('/profile')} className="nav-avatar" />
                                 ) : (
-                                    <button className="btn btn-outline" onClick={() => navigate('/profile')} style={{ color: '#2563eb', borderColor: '#2563eb', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}>Profile</button>
+                                    <button className="btn btn-outline btn-sm" onClick={() => navigate('/profile')}>Profile</button>
                                 )}
-                                <button className="btn btn-outline" onClick={onLogoutClick} style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}>Sign Out</button>
+                                <button className="btn btn-outline btn-sm btn-logout" onClick={onLogoutClick}>Sign Out</button>
                             </div>
                         )}
 
-                        <Link to="/list" className="btn btn-primary" style={{ textDecoration: 'none', padding: '0.5rem 1rem', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        <Link to="/list" className="btn btn-primary list-btn">
                             List an Item
                         </Link>
                     </div>

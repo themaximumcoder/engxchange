@@ -88,6 +88,17 @@
     line-height: 1.2;
 }
 
+@media (max-width: 768px) {
+    .info-title {
+        font-size: 1.75rem;
+    }
+    
+    .item-details-grid {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+}
+
 .info-meta {
     color: #6b7280;
     font-size: 0.95rem;

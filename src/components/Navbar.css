@@ -1,141 +1,245 @@
 .navbar {
     background-color: var(--primary);
     border-bottom: 1px solid var(--border-color);
-    height: var(--header-height);
+    min-height: 80px;
+    height: auto;
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
 }
 
 .nav-container {
-    height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
 }
 
 .nav-brand {
-    font-size: 1.25rem;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: -0.02em;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    text-decoration: none;
+    flex-shrink: 0;
 }
 
-.nav-logo {
-    height: 36px;
-    width: auto;
+.nav-logo-img {
+    height: 50px;
     object-fit: contain;
-}
-
-.nav-brand-text {
-    display: flex;
-    align-items: center;
 }
 
 .nav-actions {
     display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.search-group {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 600px;
+    min-width: 0;
+}
+
+.search-input {
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    flex: 1;
+    min-width: 0;
+    font-size: 0.95rem;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: #2563eb;
+}
+
+.location-select {
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    width: 140px;
+    font-size: 0.85rem;
+    color: #374151;
+    cursor: pointer;
+    outline: none;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.nav-links-desktop {
+    display: flex;
     gap: 1rem;
     align-items: center;
+    border-right: 1px solid #e5e7eb;
+    padding-right: 1rem;
 }
 
 .nav-link-secondary {
     color: #4b5563;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
     padding: 0.4rem 0.6rem;
     border-radius: 6px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    position: relative;
+    transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .nav-link-secondary:hover {
     color: #2563eb;
-    background-color: transparent;
+    background: #eff6ff;
 }
 
-.nav-link-secondary::after {
-    content: '';
+.highlight-messages {
+    color: #10b981;
+}
+
+.auth-buttons, .user-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.btn-signup {
+    border-color: #6366f1;
+    color: #6366f1;
+    font-weight: bold;
+}
+
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+}
+
+.notification-badge {
     position: absolute;
-    bottom: -2px;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: #2563eb;
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: bold;
+    padding: 0.1rem 0.3rem;
+    border-radius: 50%;
 }
 
-.nav-link-secondary:hover::after {
-    width: 80%;
+.nav-avatar {
+    width: 36px;
+    height: 36px;
+    borderRadius: 50%;
+    cursor: pointer;
+    object-fit: cover;
+    border: 1.5px solid #2563eb;
 }
 
+.btn-logout {
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.list-btn {
+    white-space: nowrap;
+}
+
+/* TABLET & MOBILE RESPONSIVE */
 @media (max-width: 1024px) {
-    .brand-text-container {
-        display: none !important;
+    .nav-links-desktop {
+        display: none;
     }
 }
 
 @media (max-width: 768px) {
-    .desktop-only, .desktop-nav-group {
-        display: none !important;
+    .navbar {
+        min-height: auto;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .nav-brand {
+        margin: 0 auto;
+        transform: none;
+    }
+
+    .nav-logo-img {
+        height: 40px;
+    }
+
+    .nav-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .search-group {
+        width: 100%;
+        max-width: none;
+    }
+
+    .location-select {
+        width: 100px;
+    }
+
+    .nav-right-group {
+        width: 100%;
+        justify-content: center;
+        border-top: 1px solid #f3f4f6;
+        padding-top: 0.75rem;
+    }
+
+    .list-btn {
+        flex: 1;
+        text-align: center;
     }
 }
 
-.mock-login {
-    display: flex;
-    align-items: center;
-    margin-right: 1rem;
-    padding-right: 1rem;
-    border-right: 1px solid var(--border-color);
-}
-
-.mock-email-input {
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 0.85rem;
-    width: 180px;
-}
-
-.mock-email-input:focus {
-    outline: none;
-    border-color: var(--secondary);
-}
-
-/* Google Maps Autocomplete Dropdown Styling */
-.pac-container {
-    z-index: 99999 !important;
-    border-radius: 8px;
-    margin-top: 5px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
-    font-family: inherit;
-}
-
-.pac-item {
-    padding: 10px 15px;
-    cursor: pointer;
-    border-top: 1px solid #f3f4f6;
-    display: flex;
-    align-items: center;
-}
-
-.pac-item:hover {
-    background-color: #f9fafb;
-}
-
-.pac-item-query {
-    font-size: 0.95rem;
-    color: #111827;
-}
-
-.pac-icon {
-    display: none;
+@media (max-width: 480px) {
+    .location-select {
+        display: none;
+    }
+    
+    .search-input {
+        font-size: 0.85rem;
+    }
+    
+    .nav-right-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }

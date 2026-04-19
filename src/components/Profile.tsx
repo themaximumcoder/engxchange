@@ -318,7 +318,6 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                 </div>
             </div>
 
-            </div>
 
             {/* SECTION: RECRUITMENT APPLICATIONS */}
             <div style={{ width: '100%', background: '#fff', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '2rem' }}>

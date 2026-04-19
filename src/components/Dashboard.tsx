@@ -297,7 +297,7 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                                    {activeApplications.map((app, idx) => (
+                                    {activeApplications.map((app) => (
                                         <div key={app.id} style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                                                 <div>

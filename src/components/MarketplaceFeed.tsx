@@ -307,6 +307,7 @@ function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems }: { item
                     style={{ color: isSaved ? '#ef4444' : '#d1d5db', transform: isSaved ? 'scale(1.1)' : 'scale(1)' }}
                 >
                     {isSaved ? '❤️' : '🤍'}
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, marginLeft: '2px' }}>{item.points || 0}</span>
                 </button>
             </div>
             {!item.imageUrl && item.isSold && (

@@ -3,7 +3,7 @@ import type { ForumPost, Comment, Project } from '../types';
 import { CommentSection } from './CommentSection';
 import { STLViewer } from './STLViewer';
 
-export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, onFriendRequest, currentUserEmail, onReport }: { posts: ForumPost[], projects?: Project[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, onFriendRequest: (email: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void }) {
+export function ForumFeed({ posts, projects = [], comments, userVotes, onCreatePost, onVote, onAddComment, onFriendRequest, currentUserEmail, onReport, onLikeProject }: { posts: ForumPost[], projects?: (Project & { points?: number })[], comments: Comment[], userVotes: Record<string, number>, onCreatePost: () => void, onVote: (id: string, delta: number) => void, onAddComment: (postId: string, content: string) => void, onFriendRequest: (email: string) => void, currentUserEmail: string, onReport?: (id: string, type: string, reason: string) => void, onLikeProject?: (id: string) => void }) {
     const [friends, setFriends] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'questions' | 'projects'>('questions');
 
@@ -125,8 +125,11 @@ export function ForumFeed({ posts, projects = [], comments, userVotes, onCreateP
                                     <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem', color: '#1e293b' }}>{proj.title}</h3>
                                     <small style={{ color: '#64748b', fontWeight: 600 }}>By {proj.user_email} • {new Date(proj.created_at).toLocaleDateString()}</small>
                                 </div>
-                                <button style={{ background: 'none', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontSize: '1.2rem', color: '#94a3b8', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    🤍 <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Like</span>
+                                <button 
+                                    onClick={() => onLikeProject && onLikeProject(proj.id)}
+                                    style={{ background: 'none', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontSize: '1.2rem', color: '#94a3b8', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                                >
+                                    ❤️ <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{proj.points || 0} Likes</span>
                                 </button>
                             </div>
                             <p style={{ marginTop: '0', color: '#334155', fontSize: '1.05rem', lineHeight: 1.5 }}>{proj.description}</p>

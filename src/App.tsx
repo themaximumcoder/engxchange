@@ -533,8 +533,33 @@ function MainApp() {
           message: `${session.user.email!.split('@')[0]} liked your listing: "${item.title}"`
         }]).then();
       }
+
+      // Sync count in DB
+      const newPoints = (item?.points || 0) + 1;
+      setItems(prev => prev.map(i => i.id === itemId ? { ...i, points: newPoints } : i));
+      await supabase.from('marketplace_items').update({ points: newPoints }).eq('id', itemId);
     }
   }, [session, savedItems]);
+
+  const handleLikeProject = useCallback(async (projectId: string) => {
+    if (!session) { alert('Please login to like projects.'); return; }
+    
+    // We use a simple toggle logic for projects
+    const proj = globalProjects.find(p => p.id === projectId);
+    if (!proj) return;
+
+    const newPoints = (proj.points || 0) + 1;
+    setGlobalProjects(prev => prev.map(p => p.id === projectId ? { ...p, points: newPoints } : p));
+    await supabase.from('projects').update({ points: newPoints }).eq('id', projectId);
+    
+    if (proj.user_email !== session.user.email!) {
+        supabase.from('notifications').insert([{
+            user_email: proj.user_email,
+            type: 'like',
+            message: `${session.user.email!.split('@')[0]} liked your project: "${proj.title}"`
+        }]).then();
+    }
+  }, [session, globalProjects]);
 
   const handleMarkNotificationRead = async (id: string) => {
     const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
@@ -620,7 +645,7 @@ function MainApp() {
               <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
-              <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} />} />
+              <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} onLikeProject={handleLikeProject} />} />
               <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
               <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />

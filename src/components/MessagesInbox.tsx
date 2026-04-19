@@ -93,7 +93,7 @@ export function MessagesInbox({
     return (
         <div style={{ 
             display: 'flex', 
-            minHeight: isMobile ? 'calc(100vh - 250px)' : '500px', 
+            height: isMobile ? 'calc(100vh - 180px)' : '600px', 
             background: '#fff', 
             borderRadius: isMobile ? '0' : '16px', 
             border: isMobile ? 'none' : '1px solid #e5e7eb', 

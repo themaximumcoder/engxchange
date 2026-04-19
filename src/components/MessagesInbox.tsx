@@ -19,6 +19,9 @@ export function MessagesInbox({
     const [selectedContact, setSelectedContact] = useState<string | null>(null);
     const [draft, setDraft] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [showTradePicker, setShowTradePicker] = useState(false);
+    const [cashOffer, setCashOffer] = useState('');
+    const [targetItemId, setTargetItemId] = useState<string | null>(null);
     const location = useLocation() as { state: { newContact?: string, draftMessage?: string, itemId?: string } | null };
 
     useEffect(() => {
@@ -32,17 +35,14 @@ export function MessagesInbox({
             const { newContact, draftMessage, itemId } = location.state;
             setTimeout(() => {
                 setSelectedContact(newContact);
+                if (itemId) setTargetItemId(itemId);
                 if (draftMessage) {
                     setDraft(draftMessage);
-                }
-                // Handle immediate trade proposal card
-                if (itemId) {
-                    onSendMessage(newContact, "🔄 Trade Proposal", itemId);
                 }
                 window.history.replaceState({}, document.title);
             }, 0);
         }
-    }, [location.state, onSendMessage]);
+    }, [location.state]);
 
     useEffect(() => {
         if (selectedContact && onMarkAsRead) {
@@ -88,7 +88,7 @@ export function MessagesInbox({
             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
             zIndex: 1, /* Keep below navigation bars */
             margin: '0',
-            flexDirection: 'column'
+            flexDirection: isMobile ? 'column' : 'row'
         }}>
             {/* CONTACTS SIDEBAR */}
             {showSidebar && (
@@ -147,27 +147,104 @@ export function MessagesInbox({
                         </div>
                     ) : (
                         <>
-                            <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid #e5e7eb', background: '#fff', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-                                {isMobile && (
-                                    <button 
-                                        onClick={() => setSelectedContact(null)}
-                                        style={{ background: '#f1f5f9', border: 'none', padding: '0.6rem 1rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.9rem', color: '#2563eb' }}
-                                    >
-                                        ← Contacts
-                                    </button>
-                                )}
-                                <div style={{ minWidth: 0 }}>
-                                    <h3 style={{ margin: 0, fontSize: '1rem', color: '#1e293b', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedContact}</h3>
-                                    <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%' }}></span> Secure Message
+                             <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid #e5e7eb', background: '#fff', display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0, justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
+                                    {isMobile && (
+                                        <button 
+                                            onClick={() => setSelectedContact(null)}
+                                            style={{ background: '#f1f5f9', border: 'none', padding: '0.6rem 1rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '0.9rem', color: '#2563eb' }}
+                                        >
+                                            ←
+                                        </button>
+                                    )}
+                                    <div style={{ minWidth: 0 }}>
+                                        <h3 style={{ margin: 0, fontSize: '1rem', color: '#1e293b', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedContact}</h3>
+                                        <div style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%' }}></span> Secure Message
+                                        </div>
                                     </div>
                                 </div>
+                                {targetItemId && (
+                                    <div style={{ background: '#eff6ff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', color: '#1d4ed8', fontWeight: 700, border: '1px solid #dbeafe' }}>
+                                        Target: {marketplaceItems.find(i => i.id === targetItemId)?.title.substring(0, 15)}...
+                                    </div>
+                                )}
                             </div>
                             
                             {/* MESSAGES SCROLL AREA */}
                             <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#f8fafc' }}>
                                 {conversation.map(m => {
                                     const isMine = m.senderEmail?.toLowerCase() === currentUserEmail.toLowerCase();
+                                    const isTrade = m.content.startsWith('[TRADE_V1]');
+                                    
+                                    if (isTrade) {
+                                        try {
+                                            const tradeData = JSON.parse(m.content.replace('[TRADE_V1]', ''));
+                                            const myItem = marketplaceItems.find(i => i.id === tradeData.proposerItemId);
+                                            const targetItem = marketplaceItems.find(i => i.id === tradeData.targetItemId);
+                                            const isReceiver = m.receiverEmail?.toLowerCase() === currentUserEmail.toLowerCase();
+                                            const status = tradeData.status || 'pending';
+
+                                            return (
+                                                <div key={m.id} style={{ alignSelf: 'center', width: isMobile ? '100%' : '85%', margin: '1rem 0' }}>
+                                                    <div style={{ background: '#fff', border: '2px solid #e2e8f0', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                                            <div style={{ textAlign: 'center', flex: 1 }}>
+                                                                <img src={myItem?.imageUrl || getSmartPlaceholder(myItem?.title || 'Unknown', 'Other')} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', margin: '0 auto' }} />
+                                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, marginTop: '5px' }}>{myItem?.title || 'Personal Item'}</div>
+                                                            </div>
+                                                            <div style={{ fontSize: '1.5rem' }}>🔄</div>
+                                                            <div style={{ textAlign: 'center', flex: 1 }}>
+                                                                <img src={targetItem?.imageUrl || getSmartPlaceholder(targetItem?.title || 'Unknown', 'Other')} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', margin: '0 auto' }} />
+                                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, marginTop: '5px' }}>{targetItem?.title || 'Target Gear'}</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                                                            <div style={{ fontWeight: 800, color: '#1e293b' }}>Trade Proposal</div>
+                                                            {tradeData.cashOffer > 0 && <div style={{ color: '#059669', fontWeight: 700 }}>+ £{tradeData.cashOffer} Cash Offer</div>}
+                                                            <div style={{ 
+                                                                marginTop: '10px', 
+                                                                padding: '6px 16px', 
+                                                                borderRadius: '20px', 
+                                                                display: 'inline-block',
+                                                                fontSize: '0.8rem',
+                                                                fontWeight: 900,
+                                                                background: status === 'accepted' ? '#ecfdf5' : status === 'declined' ? '#fef2f2' : '#f8fafc',
+                                                                color: status === 'accepted' ? '#059669' : status === 'declined' ? '#dc2626' : '#64748b'
+                                                            }}>
+                                                                STATUS: {status.toUpperCase()}
+                                                            </div>
+                                                        </div>
+
+                                                        {isReceiver && status === 'pending' && (
+                                                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                                                <button 
+                                                                    onClick={async () => {
+                                                                        const newContent = `[TRADE_V1]${JSON.stringify({ ...tradeData, status: 'accepted' })}`;
+                                                                        await supabase.from('messages').update({ content: newContent }).eq('id', m.id);
+                                                                    }}
+                                                                    style={{ flex: 1, padding: '0.75rem', background: '#059669', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}
+                                                                >
+                                                                    Accept Trade
+                                                                </button>
+                                                                <button 
+                                                                    onClick={async () => {
+                                                                        const newContent = `[TRADE_V1]${JSON.stringify({ ...tradeData, status: 'declined' })}`;
+                                                                        await supabase.from('messages').update({ content: newContent }).eq('id', m.id);
+                                                                    }}
+                                                                    style={{ flex: 1, padding: '0.75rem', background: '#fef2f2', color: '#dc2626', border: '1px solid #fee2e2', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}
+                                                                >
+                                                                    Decline
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        } catch(e) { return null; }
+                                    }
+
                                     const linkedItem = m.itemId ? marketplaceItems.find(i => i.id === m.itemId) : null;
 
                                     return (
@@ -212,8 +289,69 @@ export function MessagesInbox({
                             </div>
 
                             {/* INPUT FORM - LOCKED TO BOTTOM */}
-                            <div style={{ padding: '1.25rem', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0 }}>
+                            <div style={{ padding: '1.25rem', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, position: 'relative' }}>
+                                {showTradePicker && (
+                                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', right: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 -4px 12px rgba(0,0,0,0.1)', marginBottom: '8px', maxHeight: '300px', overflowY: 'auto', zIndex: 10 }}>
+                                        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+                                            <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>Propose Trade</span>
+                                            <button onClick={() => setShowTradePicker(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+                                        </div>
+                                        <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', marginBottom: '8px' }}>ADD CASH OFFER (OPTIONAL)</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800 }}>£</span>
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="0.00" 
+                                                    value={cashOffer}
+                                                    onChange={e => setCashOffer(e.target.value)}
+                                                    style={{ width: '100%', padding: '10px 10px 10px 25px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div style={{ padding: '8px 1rem', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', background: '#f8fafc' }}>SELECT YOUR ITEM</div>
+                                        {marketplaceItems.filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase()).length === 0 ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>No active listings to trade</div>
+                                        ) : (
+                                            marketplaceItems
+                                                .filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase())
+                                                .map(item => (
+                                                    <div 
+                                                        key={item.id} 
+                                                        onClick={() => {
+                                                            const tradeJson = JSON.stringify({
+                                                                proposerItemId: item.id,
+                                                                targetItemId: targetItemId,
+                                                                cashOffer: parseFloat(cashOffer) || 0,
+                                                                status: 'pending'
+                                                            });
+                                                            onSendMessage(selectedContact, `[TRADE_V1]${tradeJson}`);
+                                                            setShowTradePicker(false);
+                                                            setCashOffer('');
+                                                        }}
+                                                        style={{ padding: '10px 15px', display: 'flex', gap: '12px', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                                                        onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                                                        onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                                                    >
+                                                        <img src={item.imageUrl || getSmartPlaceholder(item.title, item.society)} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
+                                                        <div style={{ minWidth: 0 }}>
+                                                            <div style={{ fontSize: '0.85rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>£{item.sellingPrice || item.originalPrice || 0}</div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                        )}
+                                    </div>
+                                )}
                                 <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowTradePicker(!showTradePicker)}
+                                        style={{ background: '#f1f5f9', border: 'none', width: '46px', height: '46px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}
+                                        title="Propose Trade"
+                                    >
+                                        🔄
+                                    </button>
                                     <input
                                         type="text"
                                         value={draft}

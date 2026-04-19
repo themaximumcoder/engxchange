@@ -419,6 +419,13 @@ function MainApp() {
   };
 
   const sendEmailNotification = async (to: string, sender: string, content: string) => {
+    let displayContent = content;
+    
+    // Sanitize trade proposal JSON for email body
+    if (content.startsWith('[TRADE_V1]')) {
+      displayContent = "Proposed a new trade for your item. Check your Inbox on engXchange to see the offer!";
+    }
+
     try {
       await supabase.functions.invoke('send-email', {
         body: { 
@@ -429,7 +436,7 @@ function MainApp() {
               <h2>New Message on engXchange</h2>
               <p><strong>From:</strong> ${sender}</p>
               <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                ${content}
+                ${displayContent}
               </div>
               <p>Reply to this message on the <a href="https://engxchange.com/inbox">engXchange Inbox</a>.</p>
             </div>

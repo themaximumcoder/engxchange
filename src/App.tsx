@@ -242,7 +242,7 @@ function MainApp() {
       })));
     }
 
-    const { data: projData } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+    const { data: projData } = await supabase.from('projects').select('*').eq('is_private', false).order('created_at', { ascending: false });
     if (projData) setGlobalProjects(projData);
   }, []);
 
@@ -745,7 +745,7 @@ function MainApp() {
               <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
               <Route path="/profile" element={<RequireAuth session={session}><Profile session={session ?? null} onProfileUpdate={loadData} /></RequireAuth>} />
-              <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
+              <Route path="/admin" element={<RequireAuth session={session}>{ (session?.user?.email === 'engxedinburgh@gmail.com' || session?.user?.email === 's2788457@ed.ac.uk' || session?.user?.email === 'admin@engxchange.com') ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
               <Route path="/update-password" element={<UpdatePassword />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/contact" element={<ContactPage />} />

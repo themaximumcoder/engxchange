@@ -423,9 +423,28 @@ export function MessagesInbox({
                                             >
                                                 Send Trade Proposal
                                             </button>
-                                        </div>
+                                        )}
                                     </div>
-                                )}
+                                    <button 
+                                        onClick={() => {
+                                            const reason = window.prompt(`Reason for reporting ${selectedContact}:`);
+                                            if (reason && reason.trim()) {
+                                                supabase.from('reports').insert([{ 
+                                                    item_id: selectedContact, 
+                                                    item_type: 'user', 
+                                                    reason: reason.trim(), 
+                                                    reported_by: currentUserEmail 
+                                                }]).then(({ error }) => {
+                                                    if (!error) alert('User report submitted. Admin will review.');
+                                                });
+                                            }
+                                        }}
+                                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem' }}
+                                        title="Report this user"
+                                    >
+                                        🚩
+                                    </button>
+                                </div>
                                 <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                     <button 
                                         type="button"

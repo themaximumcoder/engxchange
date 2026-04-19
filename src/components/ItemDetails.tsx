@@ -225,6 +225,27 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
                                         🤝 Propose Trade Exchange
                                     </button>
                                 )}
+                                <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <button 
+                                        onClick={() => {
+                                            const reason = window.prompt("Reason for reporting this seller:");
+                                            if (reason && reason.trim()) {
+                                                // We'll reuse the item ID for reports or use sellerEmail
+                                                supabase.from('reports').insert([{ 
+                                                    item_id: item.sellerEmail, 
+                                                    item_type: 'user', 
+                                                    reason: reason.trim(), 
+                                                    reported_by: currentUserEmail 
+                                                }]).then(({ error }) => {
+                                                    if (!error) alert('Seller report submitted. Admin will review.');
+                                                });
+                                            }
+                                        }}
+                                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}
+                                    >
+                                        🚩 Report Seller Behavior
+                                    </button>
+                                </div>
                             </>
                         )}
                     </div>

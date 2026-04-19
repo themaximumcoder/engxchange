@@ -16,9 +16,9 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
 
     const [projects, setProjects] = useState<Project[]>([]);
     const [projectTitle, setProjectTitle] = useState('');
-    const [projectDesc, setProjectDesc] = useState('');
-    const [projectImage, setProjectImage] = useState<File | null>(null);
     const [uploadingProject, setUploadingProject] = useState(false);
+    const [isProjectPublic, setIsProjectPublic] = useState(true);
+    const [applications, setApplications] = useState<any[]>([]);
     const [applications, setApplications] = useState<any[]>([]);
     const [loadingApps, setLoadingApps] = useState(true);
 
@@ -152,7 +152,8 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                 user_email: session.user.email,
                 title: projectTitle,
                 description: projectDesc,
-                image_url: imageUrl
+                image_url: imageUrl,
+                is_private: !isProjectPublic
             }]);
 
             if (error) throw error;
@@ -295,6 +296,10 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                         <input type="text" placeholder="Project Title (e.g. Robot Arm v2)" value={projectTitle} onChange={e => setProjectTitle(e.target.value)} required style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} />
                         <textarea placeholder="Tell the community how you built it and what materials you used!" value={projectDesc} onChange={e => setProjectDesc(e.target.value)} required rows={3} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} />
                         <input type="file" accept="image/*" onChange={e => setProjectImage(e.target.files?.[0] || null)} style={{ padding: '0.5rem', background: '#f1f5f9', borderRadius: '4px' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input type="checkbox" checked={isProjectPublic} onChange={e => setIsProjectPublic(e.target.checked)} id="isPublicToggle" />
+                            <label htmlFor="isPublicToggle" style={{ fontSize: '0.9rem', cursor: 'pointer' }}>Make project public in Community Feed</label>
+                        </div>
                         <button type="submit" disabled={uploadingProject} className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
                             {uploadingProject ? 'Pushing arrays...' : 'Publish to Portfolio'}
                         </button>
@@ -305,7 +310,10 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                     {projects.length === 0 ? (
                         <p style={{ textAlign: 'center', color: '#64748b' }}>Your portfolio is currently empty. Upload your first mechanism!</p>
                     ) : projects.map(p => (
-                        <div key={p.id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                        <div key={p.id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', position: 'relative' }}>
+                            {p.is_private && (
+                                <span style={{ position: 'absolute', top: '1rem', right: '1rem', background: '#f1f5f9', color: '#64748b', fontSize: '0.7rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', zIndex: 10 }}>🔒 Private</span>
+                            )}
                             {p.image_url && <img src={p.image_url} alt={p.title} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }} />}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.3rem' }}>{p.title}</h3>

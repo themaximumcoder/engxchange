@@ -7,6 +7,7 @@ interface AdminStats {
     posts: number;
     usersTotal: number;
     usersToday: number;
+    itemsSold: number;
 }
 
 export function AdminDashboard({ items = [] }: { items?: MarketplaceItem[] }) {
@@ -23,18 +24,20 @@ export function AdminDashboard({ items = [] }: { items?: MarketplaceItem[] }) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const [rItems, rPosts, rUsersTotal, rUsersToday] = await Promise.all([
+        const [rItems, rPosts, rUsersTotal, rUsersToday, rItemsSold] = await Promise.all([
             supabase.from('items').select('*', { count: 'exact', head: true }),
             supabase.from('posts').select('*', { count: 'exact', head: true }),
             supabase.from('users').select('*', { count: 'exact', head: true }),
-            supabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString())
+            supabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
+            supabase.from('items').select('*', { count: 'exact', head: true }).eq('is_sold', true)
         ]);
 
         setStats({
             items: rItems.count || 0,
             posts: rPosts.count || 0,
             usersTotal: rUsersTotal.count || 0,
-            usersToday: rUsersToday.count || 0
+            usersToday: rUsersToday.count || 0,
+            itemsSold: rItemsSold.count || 0
         });
 
         setLoading(false);
@@ -93,6 +96,10 @@ export function AdminDashboard({ items = [] }: { items?: MarketplaceItem[] }) {
                 <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#8b5cf6' }}>+{stats.usersToday}</div>
                     <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>New Registers Today</div>
+                </div>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#6366f1' }}>{stats.itemsSold}</div>
+                    <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 600 }}>Total Completed Sales</div>
                 </div>
             </div>
 

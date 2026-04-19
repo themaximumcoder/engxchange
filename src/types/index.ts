@@ -115,7 +115,7 @@ export interface Notification {
 export interface Report {
     id: string;
     item_id: string;
-    item_type: 'item' | 'post' | 'comment';
+    item_type: 'item' | 'post' | 'comment' | 'user';
     reported_by: string;
     reason: string;
     created_at: string;
@@ -130,6 +130,7 @@ export interface Project {
     created_at: string;
     points?: number;
     country?: string;
+    is_private?: boolean;
 }
 
 export const SOCIETIES: SocietyName[] = [

@@ -44,6 +44,22 @@ export interface MarketplaceItem {
     sellerName?: string;
     transactionMode?: 'sell' | 'trade' | 'both';
     country?: string;
+    // Recruitment specific
+    questions?: string[];
+    allowCv?: boolean;
+}
+
+export interface RecruitmentApplication {
+    id: string;
+    itemId: string;
+    applicantEmail: string;
+    applicantName?: string;
+    answers: { question: string, answer: string }[];
+    cvUrl?: string;
+    createdAt: string;
+    // Joined data for display
+    roleTitle?: string;
+    society?: string;
 }
 
 export interface ForumPost {

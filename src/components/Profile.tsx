@@ -19,6 +19,8 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
     const [projectDesc, setProjectDesc] = useState('');
     const [projectImage, setProjectImage] = useState<File | null>(null);
     const [uploadingProject, setUploadingProject] = useState(false);
+    const [applications, setApplications] = useState<any[]>([]);
+    const [loadingApps, setLoadingApps] = useState(true);
 
     const DEGREES = [
         'Computer Science', 'Software Engineering', 'Mechanical Engineering',
@@ -77,8 +79,28 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
             }
         };
 
+        const loadApplications = async () => {
+            if (!session?.user?.email) return;
+            const { data, error } = await supabase
+                .from('applications')
+                .select('*, items(title, society)')
+                .eq('applicant_email', session.user.email)
+                .order('created_at', { ascending: false });
+            
+            if (active && data) {
+                const formatted = data.map((app: any) => ({
+                    ...app,
+                    roleTitle: app.items?.title || 'Unknown Role',
+                    society: app.items?.society || 'Unknown Society'
+                }));
+                setApplications(formatted);
+            }
+            if (active) setLoadingApps(false);
+        };
+
         loadProfile();
         loadProjects();
+        loadApplications();
         fetchUnis();
         return () => { active = false; };
     }, [session]);
@@ -296,6 +318,61 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
                 </div>
             </div>
 
+            </div>
+
+            {/* SECTION: RECRUITMENT APPLICATIONS */}
+            <div style={{ width: '100%', background: '#fff', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '2rem' }}>
+                <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', color: '#1e293b' }}>
+                    Recruitment Activity (Read-Only) 📋
+                </h2>
+                
+                {loadingApps ? (
+                    <p style={{ color: '#64748b' }}>Fetching your application history...</p>
+                ) : applications.length === 0 ? (
+                    <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0' }}>
+                        <p style={{ color: '#64748b', margin: 0 }}>You haven't submitted any recruitment applications yet.</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                        {applications.map(app => (
+                            <div key={app.id} style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#1e293b' }}>{app.roleTitle}</h3>
+                                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: '#6366f1', fontWeight: 600 }}>{app.society}</p>
+                                    </div>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.25rem 0.6rem', borderRadius: '20px', background: '#e2e8f0', color: '#475569', textTransform: 'uppercase' }}>Submitted</span>
+                                </div>
+                                
+                                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Sent on {new Date(app.created_at).toLocaleDateString()}</span>
+                                
+                                <div style={{ background: '#fff', padding: '1rem', borderRadius: '8px', border: '1px solid #eee' }}>
+                                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Your Answers</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        {app.answers.map((ans: any, idx: number) => (
+                                            <div key={idx}>
+                                                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', marginBottom: '0.25rem' }}>Q: {ans.question}</p>
+                                                <p style={{ fontSize: '0.9rem', color: '#334155', margin: 0 }}>{ans.answer}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {app.cv_url && (
+                                    <a 
+                                        href={app.cv_url} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        style={{ fontSize: '0.9rem', color: '#2563eb', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}
+                                    >
+                                        📄 View Submitted CV
+                                    </a>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

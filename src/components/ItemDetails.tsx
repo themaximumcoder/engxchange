@@ -14,6 +14,10 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
     
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isTradeSelectorOpen, setIsTradeSelectorOpen] = useState(false);
+    const [isApplying, setIsApplying] = useState(false);
+    const [answers, setAnswers] = useState<Record<string, string>>({});
+    const [cvFile, setCvFile] = useState<File | null>(null);
+    const [submitting, setSubmitting] = useState(false);
     const myItems = items.filter(i => i.sellerEmail === currentUserEmail && !i.isSold && i.id !== item.id);
 
     const handleProposeTrade = (offeredItemId: string) => {
@@ -29,6 +33,41 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
     const discountPercent = hasDiscount
         ? Math.round(((item.originalPrice! - sellingPrice) / item.originalPrice!) * 100)
         : 0;
+
+    const handleApplySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            let cvUrl = '';
+            if (cvFile) {
+                const fileName = `${Date.now()}_${cvFile.name}`;
+                const { data, error } = await supabase.storage.from('recruitment_cvs').upload(fileName, cvFile);
+                if (error) throw error;
+                const { data: { publicUrl } } = supabase.storage.from('recruitment_cvs').getPublicUrl(data.path);
+                cvUrl = publicUrl;
+            }
+
+            const applicationData = {
+                item_id: item.id,
+                applicant_email: currentUserEmail,
+                applicant_name: currentUserEmail.split('@')[0],
+                answers: Object.entries(answers).map(([question, answer]) => ({ question, answer })),
+                cv_url: cvUrl || null
+            };
+
+            const { error: insertError } = await supabase.from('applications').insert([applicationData]);
+            if (insertError) throw insertError;
+
+            alert('Application submitted successfully!');
+            setIsApplying(false);
+            setAnswers({});
+            setCvFile(null);
+        } catch (err: any) {
+            alert('Submission failed: ' + err.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="item-details-container">
@@ -106,16 +145,18 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
                         <p>{item.description}</p>
                     </div>
 
-                    <div className="info-logistics">
-                        <div className="logistics-card">
-                            <strong>🚚 Delivery</strong>
-                            <p>{item.deliveryMethod === 'delivery' || item.deliveryMethod === 'both' ? 'Available for shipping/handover.' : 'Local meet-up only.'}</p>
+                    {item.type !== 'Recruiting' && (
+                        <div className="info-logistics">
+                            <div className="logistics-card">
+                                <strong>🚚 Delivery & Shipping</strong>
+                                <p>{item.deliveryMethod === 'delivery' || item.deliveryMethod === 'both' ? 'National shipping and courier handover available.' : 'Direct local handover only.'}</p>
+                            </div>
+                            <div className="logistics-card">
+                                <strong>🤝 In-Person Meet-up</strong>
+                                <p>{item.deliveryMethod === 'meetup' || item.deliveryMethod === 'both' ? (item.meetupLocationName || 'Convenient spot arranged after contact') : 'Shipping only.'}</p>
+                            </div>
                         </div>
-                        <div className="logistics-card">
-                            <strong>🤝 Meet-up</strong>
-                            <p>{item.deliveryMethod === 'meetup' || item.deliveryMethod === 'both' ? (item.meetupLocationName || 'Arranged after contact') : 'Shipping only.'}</p>
-                        </div>
-                    </div>
+                    )}
 
                     {item.meetupLat && item.meetupLng && (
                         <div className="info-map-section" style={{ marginTop: '2rem' }}>
@@ -143,19 +184,21 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
                     <div className="info-actions">
                         {!item.isSold && (
                             <>
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', padding: '1.25rem', fontSize: '1.1rem' }}
-                                    onClick={() => {
-                                        if (!isLoggedIn) {
-                                            alert("Please sign in to message sellers.");
-                                        } else {
-                                            navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: `Hey! I'm interested in "${item.title}". Is it still available?`, itemId: item.id } });
-                                        }
-                                    }}
-                                >
-                                    Message Seller
-                                </button>
+                                    <button
+                                        className="btn btn-primary"
+                                        style={{ width: '100%', padding: '1.25rem', fontSize: '1.1rem' }}
+                                        onClick={() => {
+                                            if (!isLoggedIn) {
+                                                alert("Please sign in to continue.");
+                                            } else if (item.type === 'Recruiting') {
+                                                setIsApplying(true);
+                                            } else {
+                                                navigate('/inbox', { state: { newContact: item.sellerEmail, draftMessage: `Hey! I'm interested in "${item.title}". Is it still available?`, itemId: item.id } });
+                                            }
+                                        }}
+                                    >
+                                        {item.type === 'Recruiting' ? 'Apply for Role' : 'Message Seller'}
+                                    </button>
                                 {item.sellerPhone && (
                                     <a
                                         href={`https://wa.me/${item.sellerPhone.replace(/[^0-9]/g, '')}`}
@@ -213,6 +256,49 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbo
                                     </div>
                                 )}
                                 <button className="btn btn-outline" style={{ width: '100%' }} onClick={() => setIsTradeSelectorOpen(false)}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+                    {isApplying && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '1rem', backdropFilter: 'blur(4px)' }}>
+                            <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '20px', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b' }}>Apply for {item.title}</h2>
+                                    <p style={{ color: '#64748b', marginTop: '0.5rem' }}>{item.society} Recruitment Phase</p>
+                                </div>
+                                <form onSubmit={handleApplySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    {item.questions && item.questions.map((q, idx) => (
+                                        <div key={idx} className="form-group">
+                                            <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>{q}</label>
+                                            <textarea 
+                                                required 
+                                                value={answers[q] || ''} 
+                                                onChange={e => setAnswers({ ...answers, [q]: e.target.value })}
+                                                placeholder="Type your answer here..."
+                                                style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '100px', fontSize: '0.95rem' }}
+                                            />
+                                        </div>
+                                    ))}
+                                    
+                                    {item.allowCv && (
+                                        <div className="form-group">
+                                            <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Upload CV (PDF)</label>
+                                            <input 
+                                                type="file" 
+                                                accept=".pdf" 
+                                                onChange={e => setCvFile(e.target.files?.[0] || null)}
+                                                style={{ width: '100%', padding: '0.8rem', border: '2px dashed #e2e8f0', borderRadius: '10px' }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                        <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setIsApplying(false)}>Cancel</button>
+                                        <button type="submit" className="btn btn-primary" style={{ flex: 2 }} disabled={submitting}>
+                                            {submitting ? 'Submitting Application...' : 'Send Final Application'}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     )}

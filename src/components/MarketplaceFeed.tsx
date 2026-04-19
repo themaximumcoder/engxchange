@@ -54,7 +54,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
     const [hideSold, setHideSold] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 12;
+    const ITEMS_PER_PAGE = 15;
 
     // 1. Partition Data
     const ONE_WEEK_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

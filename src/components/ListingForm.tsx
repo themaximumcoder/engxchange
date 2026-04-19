@@ -32,6 +32,10 @@ export function ListingForm({ onSubmit, onCancel, initialData, selectedCountry }
     const [error, setError] = useState<string | null>(null);
     const [selectedUni, setSelectedUni] = useState<UniversityPreset | null>(null);
     const [isLocationConfirmed, setIsLocationConfirmed] = useState(false);
+    // Recruitment specific
+    const [questions, setQuestions] = useState<string[]>(initialData?.questions || []);
+    const [allowCv, setAllowCv] = useState(initialData?.allowCv || false);
+    const [newQuestion, setNewQuestion] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,7 +94,9 @@ export function ListingForm({ onSubmit, onCancel, initialData, selectedCountry }
             views: initialData?.views || 0,
             isSold: initialData?.isSold || false,
             transactionMode: transactionMode,
-            country: initialData?.country || selectedCountry
+            country: initialData?.country || selectedCountry,
+            questions: type === 'Recruiting' ? questions : undefined,
+            allowCv: type === 'Recruiting' ? allowCv : undefined
         });
         setUploading(false);
     };
@@ -162,6 +168,52 @@ export function ListingForm({ onSubmit, onCancel, initialData, selectedCountry }
                             <div className="form-group">
                                 <label>Selling Price ({selectedCountry === 'Malaysia' ? 'RM' : '£'})</label>
                                 <input type="number" min="0" step="0.01" required={transactionMode !== 'trade'} value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder={transactionMode === 'trade' ? 'Optional' : ''} />
+                            </div>
+                        </div>
+                    )}
+
+                    {type === 'Recruiting' && (
+                        <div className="recruitment-designer" style={{ gridColumn: 'span 2', background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', color: '#475569', marginBottom: '1rem' }}>Recruitment Settings</h4>
+                            
+                            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={allowCv} onChange={e => setAllowCv(e.target.checked)} style={{ width: '18px', height: '18px' }} />
+                                    <span>Require/Allow CV Upload</span>
+                                </label>
+                                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem', marginLeft: '1.7rem' }}>Applicants will be prompted to upload a PDF of their CV.</p>
+                            </div>
+
+                            <div className="question-list">
+                                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.75rem' }}>Custom Questions for Applicants</label>
+                                {questions.length === 0 && <p style={{ fontSize: '0.85rem', color: '#94a3b8', fontStyle: 'italic', marginBottom: '0.75rem' }}>No custom questions added yet. Applicants will only provide basic contact info.</p>}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    {questions.map((q, idx) => (
+                                        <div key={idx} style={{ display: 'flex', gap: '0.5rem', background: '#fff', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>{idx + 1}.</span>
+                                            <span style={{ flex: 1, fontSize: '0.9rem' }}>{q}</span>
+                                            <button type="button" onClick={() => setQuestions(qs => qs.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.2rem' }}>✕</button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Why do you want to join our society?" 
+                                        value={newQuestion} 
+                                        onChange={e => setNewQuestion(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newQuestion.trim()) { setQuestions([...questions, newQuestion.trim()]); setNewQuestion(''); } } }}
+                                        style={{ flex: 1, padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem' }}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-outline" 
+                                        onClick={() => { if (newQuestion.trim()) { setQuestions([...questions, newQuestion.trim()]); setNewQuestion(''); } }}
+                                        style={{ padding: '0.6rem 1rem' }}
+                                    >
+                                        Add
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

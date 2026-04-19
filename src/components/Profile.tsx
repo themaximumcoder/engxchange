@@ -19,7 +19,6 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
     const [uploadingProject, setUploadingProject] = useState(false);
     const [isProjectPublic, setIsProjectPublic] = useState(true);
     const [applications, setApplications] = useState<any[]>([]);
-    const [applications, setApplications] = useState<any[]>([]);
     const [loadingApps, setLoadingApps] = useState(true);
 
     const DEGREES = [

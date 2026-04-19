@@ -177,12 +177,33 @@ export function MessagesInbox({
                                         </div>
                                     </div>
                                 </div>
-                                {selectedTargetItemId && (
-                                    <div style={{ background: '#eff6ff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', color: '#1d4ed8', fontWeight: 700, border: '1px solid #dbeafe' }}>
-                                        Target: {marketplaceItems.find(i => i.id === selectedTargetItemId)?.title.substring(0, 15)}...
-                                    </div>
-                                )}
-                            </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    {selectedTargetItemId && (
+                                        <div style={{ background: '#eff6ff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', color: '#1d4ed8', fontWeight: 700, border: '1px solid #dbeafe' }}>
+                                            Target: {marketplaceItems.find(i => i.id === selectedTargetItemId)?.title.substring(0, 15)}...
+                                        </div>
+                                    )}
+                                    <button 
+                                        onClick={() => {
+                                            const reason = window.prompt(`Reason for reporting ${selectedContact}:`);
+                                            if (reason && reason.trim()) {
+                                                supabase.from('reports').insert([{ 
+                                                    item_id: selectedContact, 
+                                                    item_type: 'user', 
+                                                    reason: reason.trim(), 
+                                                    reported_by: currentUserEmail 
+                                                }]).then(({ error }) => {
+                                                    if (!error) alert('User report submitted. Admin will review.');
+                                                });
+                                            }
+                                        }}
+                                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem' }}
+                                        title="Report this user"
+                                    >
+                                        🚩
+                                    </button>
+                                </div>
+                             </div>
                             
                             {/* MESSAGES SCROLL AREA */}
                             <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#f8fafc' }}>
@@ -421,30 +442,11 @@ export function MessagesInbox({
                                                     cursor: (!selectedTargetItemId || !selectedProposerItemId) ? 'not-allowed' : 'pointer'
                                                 }}
                                             >
-                                                Send Trade Proposal
-                                            </button>
-                                        )}
+                                            Send Trade Proposal
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={() => {
-                                            const reason = window.prompt(`Reason for reporting ${selectedContact}:`);
-                                            if (reason && reason.trim()) {
-                                                supabase.from('reports').insert([{ 
-                                                    item_id: selectedContact, 
-                                                    item_type: 'user', 
-                                                    reason: reason.trim(), 
-                                                    reported_by: currentUserEmail 
-                                                }]).then(({ error }) => {
-                                                    if (!error) alert('User report submitted. Admin will review.');
-                                                });
-                                            }
-                                        }}
-                                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer', padding: '0.5rem' }}
-                                        title="Report this user"
-                                    >
-                                        🚩
-                                    </button>
                                 </div>
+                            )}
                                 <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                     <button 
                                         type="button"

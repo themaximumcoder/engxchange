@@ -52,6 +52,8 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
     const [sortOption, setSortOption] = useState('newest');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
     const [hideSold, setHideSold] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 3;
 
     // 1. Partition Data
     const hotItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
@@ -83,7 +85,16 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
         return sorted;
     };
 
-    const displayItems = sortItems(standardItems);
+    const allFilteredItems = sortItems(standardItems);
+    
+    // Pagination logic
+    const totalPages = Math.ceil(allFilteredItems.length / ITEMS_PER_PAGE);
+    const paginatedItems = allFilteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    // Reset to page 1 if filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sortOption, hideSold, locationFilter]);
 
     return (
         <div className="feed-container">
@@ -138,16 +149,59 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                     </div>
                 </div>
 
-                {displayItems.length === 0 ? (
+                {paginatedItems.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem', background: '#f9fafb', borderRadius: '12px', border: '2px dashed #e5e7eb' }}>
                         <p style={{ color: '#6b7280', margin: 0 }}>No matching engineering gear found in this category.</p>
                     </div>
                 ) : (
-                    <div className="items-grid">
-                        {displayItems.map((item) => (
-                            <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
-                        ))}
-                    </div>
+                    <>
+                        <div className="items-grid">
+                            {paginatedItems.map((item) => (
+                                <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                            ))}
+                        </div>
+
+                        {/* Pagination UI */}
+                        {totalPages > 1 && (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '3rem', padding: '1rem' }}>
+                                <button 
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                                >
+                                    Previous
+                                </button>
+                                
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #e5e7eb',
+                                            background: currentPage === pageNum ? '#2563eb' : '#fff',
+                                            color: currentPage === pageNum ? '#fff' : '#374151',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                ))}
+
+                                <button 
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 

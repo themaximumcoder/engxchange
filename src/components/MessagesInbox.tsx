@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { getSmartPlaceholder } from '../lib/helpers';
@@ -25,6 +25,17 @@ export function MessagesInbox({
     const [selectedTargetItemId, setSelectedTargetItemId] = useState<string | null>(null);
     const [selectedProposerItemId, setSelectedProposerItemId] = useState<string | null>(null);
     const location = useLocation() as { state: { newContact?: string, draftMessage?: string, itemId?: string } | null };
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        if (selectedContact) {
+            scrollToBottom();
+        }
+    }, [messages.length, selectedContact]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -288,6 +299,7 @@ export function MessagesInbox({
                                         </div>
                                     );
                                 })}
+                                <div ref={messagesEndRef} />
                             </div>
 
                             {/* INPUT FORM - LOCKED TO BOTTOM */}

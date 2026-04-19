@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { MarketplaceItem } from '../types';
 import { ListingForm } from './ListingForm';
-import { Package, Star, Edit3, Trash2 } from 'lucide-react';
+import { Package, Star, Edit3, Trash2, Users, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -15,15 +16,48 @@ interface DashboardProps {
 }
 
 export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing, selectedCountry }: DashboardProps) {
+    const navigate = useNavigate();
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
+    const [friends, setFriends] = useState<{ id: string; friend_email: string; status: string }[]>([]);
+    const [loadingFriends, setLoadingFriends] = useState(true);
 
     const sellerItems = items.filter(i =>
         i.sellerEmail?.toLowerCase() === currentUserEmail?.toLowerCase()
     );
     const gearItems = sellerItems;
 
-    // 2. Derive User Points
+    // Derived User Points
     const userPoints = sellerItems.length > 0 ? sellerItems[0].points : 0;
+
+    useEffect(() => {
+        const fetchFriends = async () => {
+            try {
+                // Fetch friends where user is either sender or receiver and status is accepted
+                const { data, error } = await supabase
+                    .from('friends')
+                    .select('*')
+                    .or(`user_email.eq.${currentUserEmail},friend_email.eq.${currentUserEmail}`)
+                    .eq('status', 'accepted');
+                
+                if (error) throw error;
+
+                // Map to get the *other* person's email
+                const mappedFriends = (data || []).map(f => ({
+                    id: f.id,
+                    friend_email: f.user_email === currentUserEmail ? f.friend_email : f.user_email,
+                    status: f.status
+                }));
+
+                setFriends(mappedFriends);
+            } catch (err) {
+                console.error("Error fetching friends:", err);
+            } finally {
+                setLoadingFriends(false);
+            }
+        };
+
+        if (currentUserEmail) fetchFriends();
+    }, [currentUserEmail]);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to permanently delete this listing?')) return;
@@ -133,33 +167,87 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
 
     return (
         <div className="dashboard-container">
-            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem', color: '#000' }}>Engineering Gear & Equipment</h1>
-                    <p>Orchestrate your engineering listings and project recruitment.</p>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.5rem', color: '#000' }}>Engineering Center</h1>
+                    <p>Orchestrate your engineering listings, recruitment, and peer connections.</p>
                 </div>
                 <div className="score-badge">
                     <span style={{ fontSize: '0.75rem', color: '#92400e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>Trust Score</span>
                     <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Star size={24} fill="#92400e" /> {userPoints || 0}
+                        < Star size={24} fill="#92400e" /> {userPoints || 0}
                     </div>
                 </div>
             </div>
 
-            <div className="dashboard-sections">
-                {/* SECTION: GEAR & ITEMS */}
-                <section>
-                    {gearItems.length === 0 ? (
-                        <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
-                            You aren't currently selling any equipment.
-                        </div>
-                    ) : (
-                        <div className="dashboard-items">
-                            {gearItems.map(renderItemCard)}
-                        </div>
-                    )}
-                </section>
+            <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '2rem' }}>
+                {/* LEFT: GEAR & ITEMS */}
+                <div className="dashboard-sections">
+                    <section>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Package size={20} /> Your Marketplace Items
+                        </h2>
+                        {gearItems.length === 0 ? (
+                            <div style={{ padding: '3rem', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', color: '#64748b' }}>
+                                You aren't currently selling any equipment.
+                            </div>
+                        ) : (
+                            <div className="dashboard-items">
+                                {gearItems.map(renderItemCard)}
+                            </div>
+                        )}
+                    </section>
+                </div>
 
+                {/* RIGHT: FRIENDS SIDEBAR */}
+                <aside className="dashboard-sidebar">
+                    <section style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '1.5rem', position: 'sticky', top: '2rem' }}>
+                        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
+                            <Users size={20} color="#2563eb" /> Engineering Peers
+                        </h2>
+
+                        {loadingFriends ? (
+                            <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Loading connections...</p>
+                        ) : friends.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                                <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1rem' }}>No friends added yet.</p>
+                                <button className="btn btn-outline" style={{ width: '100%', fontSize: '0.8rem' }} onClick={() => navigate('/forum')}>Find People in Forum</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                {friends.map((friend) => (
+                                    <div key={friend.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                        <div style={{ overflow: 'hidden' }}>
+                                            <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{friend.friend_email.split('@')[0]}</p>
+                                            <p style={{ fontSize: '0.7rem', color: '#64748b' }}>Verified Student</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate(`/inbox?with=${friend.friend_email}`)}
+                                            style={{ padding: '0.5rem', borderRadius: '8px', background: '#fff', border: '1px solid #e2e8f0', color: '#2563eb', cursor: 'pointer', display: 'flex' }}
+                                            title="Message Friend"
+                                        >
+                                            <MessageSquare size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+                            <h3 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '1rem' }}>Trust Metrics</h3>
+                            <div style={{ spacing: '0.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                                    <span style={{ color: '#64748b' }}>Response Rate</span>
+                                    <span style={{ fontWeight: 700, color: '#10b981' }}>98%</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                                    <span style={{ color: '#64748b' }}>Active Since</span>
+                                    <span style={{ fontWeight: 700, color: '#334155' }}>2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
             </div>
         </div>
     );

@@ -497,7 +497,7 @@ function MainApp() {
     }
   };
 
-  const sendEmailNotification = async (to: string, sender: string, content: string) => {
+  const sendEmailNotification = async (to: string, sender: string, content: string, messageId?: string) => {
     let displayContent = content;
     
     // Sanitize trade proposal JSON for email body
@@ -505,12 +505,30 @@ function MainApp() {
       displayContent = "Proposed a new trade for your item. Check your Inbox on engXchange to see the offer!";
     }
 
-    try {
-      await supabase.functions.invoke('send-email', {
-        body: { to, sender, content: displayContent }
-      });
-    } catch (err) {
-      console.error('Email notification failed:', err);
+    // Direct Messages (with ID) have a suppression check
+    if (messageId) {
+       // Wait 15 seconds to see if recipient reads it
+       setTimeout(async () => {
+          const { data: checkData } = await supabase.from('messages').select('read').eq('id', messageId).single();
+          if (checkData && !checkData.read) {
+             try {
+               await supabase.functions.invoke('send-email', {
+                 body: { to, sender, content: displayContent }
+               });
+             } catch (err) {
+               console.error('Email notification failed:', err);
+             }
+          }
+       }, 15000);
+    } else {
+      // Immediate delivery for comments/requests
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: { to, sender, content: displayContent }
+        });
+      } catch (err) {
+        console.error('Email notification failed:', err);
+      }
     }
   };
 
@@ -552,8 +570,8 @@ function MainApp() {
         message: `${session.user.email} sent you a direct message` 
       }]).then();
       
-      // Trigger email notification
-      sendEmailNotification(receiver, session.user.email!, content);
+      // Trigger email notification with suppression logic (15s delay)
+      sendEmailNotification(receiver, session.user.email!, content, r.id);
     }
   }, [session]);
 

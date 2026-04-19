@@ -108,7 +108,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
 
             {/* SECTION 1: HOT LISTINGS (SLIDER) */}
             {hotItems.length > 0 && (
-                <div className="feed-section">
+                <div className="feed-section top-picks-section">
                     <div className="feed-header">
                         <h2>Top Engineering Picks 🔥</h2>
                     </div>

@@ -20,6 +20,8 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
     const [friends, setFriends] = useState<{ id: string; friend_email: string; status: string }[]>([]);
     const [loadingFriends, setLoadingFriends] = useState(true);
+    const [applications, setApplications] = useState<any[]>([]);
+    const [viewingItemId, setViewingItemId] = useState<string | null>(null);
 
     const sellerItems = items.filter(i =>
         i.sellerEmail?.toLowerCase() === currentUserEmail?.toLowerCase()
@@ -30,34 +32,44 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
     const userPoints = sellerItems.length > 0 ? sellerItems[0].points : 0;
 
     useEffect(() => {
-        const fetchFriends = async () => {
+        const fetchDashboardData = async () => {
+            if (!currentUserEmail) return;
+            
             try {
-                // Fetch friends where user is either sender or receiver and status is accepted
-                const { data, error } = await supabase
+                // 1. Fetch Friends
+                const { data: fData, error: fError } = await supabase
                     .from('friends')
                     .select('*')
                     .or(`user_email.eq.${currentUserEmail},friend_email.eq.${currentUserEmail}`)
                     .eq('status', 'accepted');
                 
-                if (error) throw error;
-
-                // Map to get the *other* person's email
-                const mappedFriends = (data || []).map(f => ({
+                if (fError) throw fError;
+                setFriends((fData || []).map(f => ({
                     id: f.id,
                     friend_email: f.user_email === currentUserEmail ? f.friend_email : f.user_email,
                     status: f.status
-                }));
+                })));
 
-                setFriends(mappedFriends);
+                // 2. Fetch Applications for user's listings
+                const itemIds = sellerItems.map(i => i.id);
+                if (itemIds.length > 0) {
+                    const { data: aData, error: aError } = await supabase
+                        .from('applications')
+                        .select('*')
+                        .in('item_id', itemIds);
+                    if (aError) throw aError;
+                    setApplications(aData || []);
+                }
+
             } catch (err) {
-                console.error("Error fetching friends:", err);
+                console.error("Dashboard Fetch Error:", err);
             } finally {
                 setLoadingFriends(false);
             }
         };
 
-        if (currentUserEmail) fetchFriends();
-    }, [currentUserEmail]);
+        fetchDashboardData();
+    }, [currentUserEmail, items]);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to permanently delete this listing?')) return;
@@ -112,58 +124,73 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
         );
     }
 
-    const renderItemCard = (item: MarketplaceItem) => (
-        <div key={item.id} className="dashboard-item">
-            <div className="dashboard-item-info">
-                {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.title} className="dashboard-item-img" />
-                ) : (
-                    <div className="dashboard-item-img" style={{ background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #cbd5e1' }}>
-                        <Package color="#94a3b8" />
+    const renderItemCard = (item: MarketplaceItem) => {
+        const itemApps = applications.filter(a => a.item_id === item.id);
+        
+        return (
+            <div key={item.id} className="dashboard-item">
+                <div className="dashboard-item-info">
+                    {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.title} className="dashboard-item-img" />
+                    ) : (
+                        <div className="dashboard-item-img" style={{ background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #cbd5e1' }}>
+                            <Package color="#94a3b8" />
+                        </div>
+                    )}
+                    <div className="dashboard-item-text">
+                        <h3>{item.title || 'Untitled Listing'}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span className={`status-badge ${item.isSold ? 'sold' : 'active'}`}>
+                                {item.isSold ? 'Sold' : 'Active'}
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                                ID: {item.id ? item.id.substring(0, 8) : 'Pending...'}
+                            </span>
+                        </div>
+                        <p className="item-meta">
+                            {item.society || 'Engineering'} &bull; {item.type || 'Gear'}
+                            {item.sellingPrice != null && ` • £${item.sellingPrice.toFixed(2)}`}
+                        </p>
                     </div>
-                )}
-                <div className="dashboard-item-text">
-                    <h3>{item.title || 'Untitled Listing'}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span className={`status-badge ${item.isSold ? 'sold' : 'active'}`}>
-                            {item.isSold ? 'Sold' : 'Active'}
-                        </span>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                            ID: {item.id ? item.id.substring(0, 8) : 'Pending...'}
-                        </span>
-                    </div>
-                    <p className="item-meta">
-                        {item.society || 'Engineering'} &bull; {item.type || 'Gear'}
-                        {item.sellingPrice != null && ` • £${item.sellingPrice.toFixed(2)}`}
-                    </p>
                 </div>
-            </div>
 
-            <div className="dashboard-item-actions">
-                {item.type !== 'Recruiting' && (
-                    <button 
-                        className="btn btn-outline" 
-                        style={{ width: '100%', fontSize: '0.85rem', borderColor: item.isSold ? '#10b981' : undefined, color: item.isSold ? '#10b981' : undefined }} 
-                        onClick={() => onMarkSold(item.id, !item.isSold)}
-                    >
-                        {item.isSold ? 'Mark as Unsold' : 'Mark as Sold'}
-                    </button>
-                )}
-                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-                    <button className="btn btn-primary" style={{ flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={() => setEditingItem(item)}>
-                        <Edit3 size={16} /> Edit
-                    </button>
-                    <button
-                        className="btn btn-outline"
-                        onClick={() => handleDelete(item.id)}
-                        style={{ color: '#ef4444', borderColor: '#ef4444', flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-                    >
-                        <Trash2 size={16} /> Delete
-                    </button>
+                <div className="dashboard-item-actions">
+                    {item.type === 'Recruiting' ? (
+                        <button 
+                            className="btn btn-primary" 
+                            style={{ width: '100%', fontSize: '0.85rem', background: '#4f46e5', marginBottom: '0.5rem' }}
+                            onClick={() => setViewingItemId(item.id)}
+                        >
+                            📋 View {itemApps.length} Applications
+                        </button>
+                    ) : (
+                        <button 
+                            className="btn btn-outline" 
+                            style={{ width: '100%', fontSize: '0.85rem', borderColor: item.isSold ? '#10b981' : undefined, color: item.isSold ? '#10b981' : undefined }} 
+                            onClick={() => onMarkSold(item.id, !item.isSold)}
+                        >
+                            {item.isSold ? 'Mark as Unsold' : 'Mark as Sold'}
+                        </button>
+                    )}
+                    <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                        <button className="btn btn-primary" style={{ flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={() => setEditingItem(item)}>
+                            <Edit3 size={16} /> Edit
+                        </button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() => handleDelete(item.id)}
+                            style={{ color: '#ef4444', borderColor: '#ef4444', flex: 1, padding: '0.6rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                        >
+                            <Trash2 size={16} /> Delete
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
+
+    const selectedItemForApps = sellerItems.find(i => i.id === viewingItemId);
+    const activeApplications = applications.filter(a => a.item_id === viewingItemId);
 
     return (
         <div className="dashboard-container">
@@ -249,6 +276,56 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                     </section>
                 </aside>
             </div>
+
+            {/* APPLICATIONS MODAL */}
+            {viewingItemId && selectedItemForApps && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1.5rem', backdropFilter: 'blur(4pt)' }}>
+                    <div style={{ background: 'white', borderRadius: '24px', maxWidth: '800px', width: '100%', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <div style={{ padding: '2rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e293b' }}>Applicants for {selectedItemForApps.title}</h2>
+                                <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Review candidate responses and CVs for your society role.</p>
+                            </div>
+                            <button className="btn btn-outline" style={{ borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }} onClick={() => setViewingItemId(null)}>×</button>
+                        </div>
+                        
+                        <div style={{ padding: '2rem', overflowY: 'auto' }}>
+                            {activeApplications.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                                    <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🔦</span>
+                                    No applications received yet. Check back soon!
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                    {activeApplications.map((app, idx) => (
+                                        <div key={app.id} style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                                                <div>
+                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>{app.applicant_name}</h3>
+                                                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>{app.applicant_email}</p>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    {app.cv_url && <a href={app.cv_url} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ fontSize: '0.8rem', background: '#10b981' }}>View CV</a>}
+                                                    <button className="btn btn-outline" style={{ fontSize: '0.8rem' }} onClick={() => navigate(`/inbox?with=${app.applicant_email}`)}>Message</button>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {app.answers && app.answers.map((ans: any, aidx: number) => (
+                                                    <div key={aidx} style={{ background: '#fff', padding: '1rem', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                                                        <p style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{ans.question}</p>
+                                                        <p style={{ fontSize: '0.95rem', color: '#334155', lineHeight: '1.5' }}>{ans.answer}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

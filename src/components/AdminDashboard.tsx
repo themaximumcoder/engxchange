@@ -13,7 +13,7 @@ interface AdminStats {
 export function AdminDashboard({ items = [] }: { items?: MarketplaceItem[] }) {
     console.log(`Admin context: handling ${items.length} marketplace items.`);
     const [reports, setReports] = useState<Report[]>([]);
-    const [stats, setStats] = useState<AdminStats>({ items: 0, posts: 0, usersTotal: 0, usersToday: 0 });
+    const [stats, setStats] = useState<AdminStats>({ items: 0, posts: 0, usersTotal: 0, usersToday: 0, itemsSold: 0 });
     const [loading, setLoading] = useState(true);
 
     const loadReports = useCallback(async () => {

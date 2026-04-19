@@ -16,6 +16,8 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
 
     const [projects, setProjects] = useState<Project[]>([]);
     const [projectTitle, setProjectTitle] = useState('');
+    const [projectDesc, setProjectDesc] = useState('');
+    const [projectImage, setProjectImage] = useState<File | null>(null);
     const [uploadingProject, setUploadingProject] = useState(false);
     const [isProjectPublic, setIsProjectPublic] = useState(true);
     const [applications, setApplications] = useState<any[]>([]);

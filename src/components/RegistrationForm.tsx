@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { UNIVERSITY_PRESETS } from '../lib/universityData';
 
 export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
+    const [selectedCountry, setSelectedCountry] = useState<'UK' | 'Malaysia'>('UK');
     const [universities, setUniversities] = useState<{ name: string }[]>([]);
     const [selectedUni, setSelectedUni] = useState('');
     const [username, setUsername] = useState('');
@@ -9,66 +11,33 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        let active = true;
-        const fetchUnis = async () => {
-            try {
-                // External API can be flaky, we fetch UK list
-                const res = await fetch('https://universities.hipolabs.com/search?country=United+Kingdom');
-                if (!res.ok) throw new Error('API unreachable');
-                const data = await res.json();
-                if (active) {
-                    const uniqueNames = Array.from(new Set<string>(data.map((u: { name: string }) => u.name)));
-                    uniqueNames.sort((a, b) => a.localeCompare(b));
-                    const mapped = uniqueNames.map(name => ({ name }));
-                    setUniversities(mapped);
-                    if (mapped.length > 0) setSelectedUni(mapped[0].name);
-                    setLoading(false);
-                }
-            } catch (err: unknown) {
-                if (active) {
-                    console.error("Failed to fetch universities API, using internal list", err);
-                    // ... (rest of catch block)
-                    // Robust static fallback for major UK engineering schools
-                    const fallbackUnis = [
-                        'University of Edinburgh',
-                        'Imperial College London',
-                        'University of Oxford',
-                        'University of Cambridge',
-                        'University of Manchester',
-                        'University of Glasgow',
-                        'University of Strathclyde',
-                        'Heriot-Watt University',
-                        'Loughborough University',
-                        'University of Bristol',
-                        'University of Sheffield',
-                        'University of Leeds',
-                        'University of Nottingham',
-                        'Other UK University'
-                    ].sort().map(name => ({ name }));
-                    setUniversities(fallbackUnis);
-                    setSelectedUni('University of Edinburgh');
-                    setLoading(false);
-                }
-            }
-        };
-        fetchUnis();
-        return () => { active = false; };
-    }, []);
+        const filtered = UNIVERSITY_PRESETS
+            .filter(u => u.country === selectedCountry)
+            .map(u => ({ name: u.name }))
+            .sort((a, b) => a.name.localeCompare(b));
+        
+        setUniversities(filtered);
+        if (filtered.length > 0) {
+            setSelectedUni(filtered[0].name);
+        }
+    }, [selectedCountry]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!email.toLowerCase().endsWith('.ac.uk')) {
-            alert('Only UK university student accounts (.ac.uk) are permitted to sign up.');
+        const isUK = selectedCountry === 'UK';
+        const requiredDomain = isUK ? '.ac.uk' : '.edu.my';
+        
+        if (!email.toLowerCase().endsWith(requiredDomain)) {
+            alert(`Only ${selectedCountry} university student accounts (${requiredDomain}) are permitted for this region.`);
             return;
         }
 
         setLoading(true);
         try {
-            // 1. Proactively check if email already exists in our public users table
             const { data: existingUser } = await supabase
                 .from('users')
                 .select('email')
@@ -81,15 +50,13 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
                 return;
             }
 
-            // 2. Securely create the user Auth credential
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email, password
             });
             if (authError) throw authError;
 
-            // Push public profile data
             const { error: dbError } = await supabase.from('users').insert([
-                { id: authData.user?.id, email, username, university: selectedUni, gender, phone }
+                { id: authData.user?.id, email, username, university: selectedUni, gender, phone, country: selectedCountry }
             ]);
 
             if (dbError) throw dbError;
@@ -106,22 +73,44 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
 
     return (
         <div className="form-container" style={{ padding: '2.5rem', maxWidth: '500px', margin: '2rem auto', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginBottom: '0.5rem', fontSize: '1.75rem', color: '#111827' }}>Student Registration</h2>
-            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>Create an account to verify your student status and gain access to the marketplace.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                 <div style={{ padding: '8px 12px', background: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800 }}>Student Verification</div>
+            </div>
+            <h2 style={{ marginBottom: '0.5rem', fontSize: '1.75rem', color: '#111827' }}>Create Account</h2>
+            <p style={{ color: '#6b7280', marginBottom: '2rem' }}>Please use your official university credentials to join the marketplace.</p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontWeight: 600, color: '#374151' }}>Username <span style={{ color: '#ef4444' }}>*</span></label>
-                    <input type="text" required value={username} onChange={e => setUsername(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="CoolEngineer99" />
+                    <label style={{ fontWeight: 600, color: '#374151' }}>Select Your Region <span style={{ color: '#ef4444' }}>*</span></label>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button 
+                            type="button"
+                            onClick={() => setSelectedCountry('UK')}
+                            style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '2px solid', borderColor: selectedCountry === 'UK' ? '#2563eb' : '#e5e7eb', background: selectedCountry === 'UK' ? '#eff6ff' : '#fff', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            🇬🇧 UK
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setSelectedCountry('Malaysia')}
+                            style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '2px solid', borderColor: selectedCountry === 'Malaysia' ? '#2563eb' : '#e5e7eb', background: selectedCountry === 'Malaysia' ? '#eff6ff' : '#fff', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            🇲🇾 Malaysia
+                        </button>
+                    </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontWeight: 600, color: '#374151' }}>University (Live Source) <span style={{ color: '#ef4444' }}>*</span></label>
-                    {loading ? <p style={{ color: '#10b981' }}>Fetching live UK universities list...</p> : (
-                        <select required value={selectedUni} onChange={e => setSelectedUni(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }}>
-                            {universities.map((u, i) => <option key={i} value={u.name}>{u.name}</option>)}
-                        </select>
-                    )}
+                    <label style={{ fontWeight: 600, color: '#374151' }}>Username <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" required value={username} onChange={e => setUsername(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="e.g. FutureEngineer" />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <label style={{ fontWeight: 600, color: '#374151' }}>Select University <span style={{ color: '#ef4444' }}>*</span></label>
+                    <select required value={selectedUni} onChange={e => setSelectedUni(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }}>
+                        {universities.map((u, i) => <option key={i} value={u.name}>{u.name}</option>)}
+                    </select>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -136,8 +125,15 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontWeight: 600, color: '#374151' }}>Student Email Address <span style={{ color: '#ef4444' }}>*</span></label>
-                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="student@university.ac.uk" />
+                    <label style={{ fontWeight: 600, color: '#374151' }}>University Email Address <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input 
+                        type="email" 
+                        required 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} 
+                        placeholder={selectedCountry === 'UK' ? "student@university.ac.uk" : "student@university.edu.my"} 
+                    />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -147,10 +143,23 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <label style={{ fontWeight: 600, color: '#374151' }}>Phone Number <span style={{ color: '#9ca3af', fontWeight: 'normal', fontSize: '0.9rem' }}>(Optional)</span></label>
-                    <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} placeholder="+44 7123 456789" />
+                    <input 
+                        type="tel" 
+                        value={phone} 
+                        onChange={e => setPhone(e.target.value)} 
+                        style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db' }} 
+                        placeholder={selectedCountry === 'UK' ? "+44 7XXX XXXXXX" : "+60 1X-XXXXXXX"} 
+                    />
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold' }}>Complete Registration</button>
+                <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    disabled={loading}
+                    style={{ marginTop: '1rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold' }}
+                >
+                    {loading ? 'Verifying...' : 'Complete Registration'}
+                </button>
             </form>
         </div>
     );

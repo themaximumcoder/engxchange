@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ENTRY_TYPES, UNIVERSITY_PRESETS } from '../types';
+import { ENTRY_TYPES } from '../types';
+import { UNIVERSITY_PRESETS } from '../lib/universityData';
 import type { MarketplaceItem, EntryType, UniversityPreset } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { Truck, MapPin } from 'lucide-react';

@@ -17,7 +17,7 @@ import { ItemDetails } from './components/ItemDetails';
 import { NotificationsPage } from './components/NotificationsPage';
 import { UpdatePassword } from './components/UpdatePassword';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
-import { UNIVERSITY_PRESETS } from './types';
+import { UNIVERSITY_PRESETS } from './lib/universityData';
 import type { MarketplaceItem, ForumPost, Comment, Message, Notification, Project, SocietyName, EntryType } from './types';
 import { supabase } from './lib/supabaseClient';
 import { ErrorBoundary } from './components/ErrorBoundary';

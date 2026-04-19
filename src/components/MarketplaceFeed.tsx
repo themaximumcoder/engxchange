@@ -56,7 +56,11 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
     const ITEMS_PER_PAGE = 3;
 
     // 1. Partition Data
-    const hotItems = [...items].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
+    const ONE_WEEK_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const hotItems = items
+        .filter(i => !i.isSold && new Date(i.createdAt) >= ONE_WEEK_AGO)
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 6);
     const recruitingItems = items.filter(i => i.type === 'Recruiting');
     let standardItems = items.filter(i => i.type !== 'Recruiting');
 

@@ -117,13 +117,23 @@ textarea {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
+    right: 0;
     background: white;
-    border-top: 1px solid #e5e7eb;
     justify-content: space-around;
-    padding: 0.8rem 0;
-    z-index: 1000; /* Increased to stay on top of all components */
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    padding: 0;
+    height: 60px;
+    border-top: 1px solid #ddd;
+    z-index: 10000;
+  }
+
+  .mobile-nav-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    height: 100%;
+    text-decoration: none;
   }
 
   .main-content {

@@ -80,14 +80,15 @@ export function MessagesInbox({
     return (
         <div style={{ 
             display: 'flex', 
-            height: isMobile ? 'calc(100vh - 220px)' : '750px', 
+            minHeight: isMobile ? 'calc(100vh - 250px)' : '750px', 
             background: '#fff', 
             borderRadius: isMobile ? '0' : '16px', 
             border: isMobile ? 'none' : '1px solid #e5e7eb', 
             overflow: 'hidden',
             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
             zIndex: 1, /* Keep below navigation bars */
-            margin: '0'
+            margin: '0',
+            flexDirection: 'column'
         }}>
             {/* CONTACTS SIDEBAR */}
             {showSidebar && (

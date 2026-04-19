@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { MarketplaceFeed } from './components/MarketplaceFeed';
 import { ListingForm } from './components/ListingForm';
@@ -28,7 +28,9 @@ import './App.css';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
 
-const RequireAuth = ({ session, children }: { session: Session | null, children: React.ReactNode }) => {
+const RequireAuth = ({ session, children }: { session: Session | null | undefined, children: React.ReactNode }) => {
+  // If session is undefined (still loading), don't redirect yet
+  if (session === undefined) return null;
   if (!session) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
@@ -113,7 +115,7 @@ function MainApp() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
@@ -211,10 +213,15 @@ function MainApp() {
         })));
       }
 
-      const { data: mData } = await supabase.from('messages')
+      const userEmail = session.user.email;
+      const { data: mData, error: mError } = await supabase.from('messages')
         .select('*')
-        .or(`sender_email.eq.${session.user.email},receiver_email.eq.${session.user.email}`)
+        .or(`sender_email.eq.${userEmail},receiver_email.eq.${userEmail}`)
         .order('created_at', { ascending: true });
+
+      if (mError) {
+        console.error("Message Fetch Error:", mError);
+      }
       if (active && mData) {
         setMessages(mData.map((r: Record<string, unknown>) => ({
           id: r.id as string, 
@@ -434,36 +441,50 @@ function MainApp() {
     }
   };
 
-  const handleSendMessage = async (receiver: string, content: string, itemId?: string) => {
-    if (!session) return;
+  const handleSendMessage = useCallback(async (receiver: string, content: string, _itemId?: string) => {
+    if (!session?.user?.email) return;
+    
+    // NOTE: item_id is removed because it's not in current DB schema
     const payload = { 
       sender_email: session.user.email, 
       receiver_email: receiver, 
       content,
-      item_id: itemId || null
+      read: false
     };
+    
     const { data, error } = await supabase.from('messages').insert([payload]).select();
+    
+    if (error) {
+       console.error("Supabase Message Insert Error:", error);
+       alert("Message failed to send. Please check your connection.");
+       return;
+    }
+
     if (!error && data && data.length > 0) {
-      const newMsg = { 
-        id: data[0].id, 
-        senderEmail: data[0].sender_email, 
-        receiverEmail: data[0].receiver_email, 
-        content: data[0].content, 
-        read: data[0].read, 
-        itemId: data[0].item_id,
-        createdAt: data[0].created_at 
+      const r = data[0];
+      const newMsg: Message = { 
+        id: r.id as string, 
+        senderEmail: r.sender_email as string, 
+        receiverEmail: r.receiver_email as string, 
+        content: r.content as string, 
+        read: r.read as boolean, 
+        createdAt: r.created_at as string 
       };
       setMessages(prev => [...prev, newMsg]);
       
       // Send in-app notification
-      supabase.from('notifications').insert([{ user_email: receiver, type: 'message', message: `${session.user.email} sent you a direct message` }]).then();
+      supabase.from('notifications').insert([{ 
+        user_email: receiver, 
+        type: 'message', 
+        message: `${session.user.email} sent you a direct message` 
+      }]).then();
       
       // Trigger email notification
       sendEmailNotification(receiver, session.user.email!, content);
     }
-  };
+  }, [session]);
 
-  const handleMarkMessagesAsRead = async (senderEmail: string) => {
+  const handleMarkMessagesAsRead = useCallback(async (senderEmail: string) => {
     if (!session?.user?.email) return;
     const now = new Date().toISOString();
     
@@ -480,15 +501,15 @@ function MainApp() {
       .eq('sender_email', senderEmail)
       .eq('receiver_email', session.user.email)
       .eq('read', false);
-  };
+  }, [session]);
 
-  const handleReport = async (itemId: string, itemType: string, reason: string) => {
+  const handleReport = useCallback(async (itemId: string, itemType: string, reason: string) => {
     if (!session) { alert('Authentication required.'); return; }
     const { error } = await supabase.from('reports').insert([{ item_id: itemId, item_type: itemType, reason, reported_by: session.user.email }]);
     if (!error) alert('Report submitted successfully.');
-  };
+  }, [session]);
 
-  const handleLikeItem = async (itemId: string) => {
+  const handleLikeItem = useCallback(async (itemId: string) => {
     if (!session) { alert('Please login to save items.'); return; }
     
     const isSaved = savedItems.includes(itemId);
@@ -515,7 +536,7 @@ function MainApp() {
         }]).then();
       }
     }
-  };
+  }, [session, savedItems]);
 
   const handleMarkNotificationRead = async (id: string) => {
     const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
@@ -617,13 +638,13 @@ function MainApp() {
 
         {!(location.pathname === '/inbox' && window.innerWidth < 768) && <Footer />}
 
-        {session && (
+        {session !== undefined && session !== null && (
           <nav className="mobile-nav">
-            <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>🏠</div>
-            <div onClick={() => navigate('/forum')} style={{ cursor: 'pointer' }}>💬</div>
-            <div onClick={() => navigate('/notifications')} style={{ cursor: 'pointer' }}>🔔</div>
-            <div onClick={() => navigate('/inbox')} style={{ cursor: 'pointer' }}>📬</div>
-            <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>👤</div>
+            <Link to="/" className="mobile-nav-link">🏠</Link>
+            <Link to="/forum" className="mobile-nav-link">💬</Link>
+            <Link to="/notifications" className="mobile-nav-link">🔔</Link>
+            <Link to="/inbox" className="mobile-nav-link">📬</Link>
+            <Link to="/profile" className="mobile-nav-link">👤</Link>
           </nav>
         )}
         <Analytics />

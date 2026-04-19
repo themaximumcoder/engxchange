@@ -141,7 +141,6 @@ function MainApp() {
           if (data.country_code === 'MY') {
             setSelectedCountry('Malaysia');
           } else {
-            // Default to UK for United Kingdom or any other country
             setSelectedCountry('UK');
           }
         })
@@ -150,6 +149,53 @@ function MainApp() {
         });
     }
   }, []);
+
+  // SEEDING LOGIC - REMOVE AFTER USE
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('seed') === 'true' && session) {
+      console.log('Seeding items via frontend session...');
+      const seedData = [
+        { title: "Arduino Uno R3 Starter Kit", description: "Complete kit for first-year electronics. Includes breadboard and 20 sensors. Minor use.", price: 35.0, original_price: 55.0, society: "Precious Plastic", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=600" },
+        { title: "Raspberry Pi 4 Model B (8GB)", description: "Powerful single board computer. Barely used, perfect for capstone projects.", price: 75.0, original_price: 95.0, society: "CompSoc", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1563213123-01048b29e240?w=600" },
+        { title: "PLA Filament Spool (White)", description: "Standard 1.75mm PLA. Vacuum sealed. Prints great on Ender 3.", price: 15.0, original_price: 20.0, society: "HumanEd", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600" },
+        { title: "PETG Filament (Blue)", description: "Tougher than PLA. 1kg spool, approx 90% left. High quality.", price: 18.0, original_price: 25.0, society: "Battleburgh", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1572914191102-404390757858?w=600" },
+        { title: "Digital Multimeter (Auto)", description: "Essential for any lab work. Reliable calibration, no blown fuses.", price: 25.0, original_price: 40.0, society: "Hyped", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1581092582845-a7b3703566fa?w=600" },
+        { title: "Soldering Iron Kit (60W)", description: "Adjustable temp iron with 5 tips. Great for PCB assembly.", price: 20.0, original_price: 35.0, society: "Precious Plastic", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600" },
+        { title: "Breadboard & Jumper Wires", description: "Standard 830 point breadboard with 65 jumper wires. Clean.", price: 8.0, original_price: 15.0, society: "BioBlocks", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=600" },
+        { title: "Ultrasonic Sensors x5", description: "HC-SR04 sensors for distance sensing. Bulk pack from robotics lab.", price: 10.0, original_price: 18.0, society: "Winds of Change (WoC)", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" },
+        { title: "Nema 17 Stepper Motor", description: "High torque motor for 3D printers or robotics projects. Tested.", price: 12.0, original_price: 20.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-15967534269ec1-5917893f72ba?w=600" },
+        { title: "L298N Motor Driver", description: "Dual H-Bridge driver. Handles up to 2A per channel. Reliable.", price: 5.0, original_price: 10.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" },
+        { title: "Pyrex Beaker Set", description: "3 beakers (100ml, 250ml, 500ml). Borosilicate glass, heat resistant.", price: 20.0, original_price: 35.0, society: "Engineering 4 change (E4C)", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1530213786676-41ad9f7736f6?w=600" },
+        { title: "Erlenmeyer Flasks x3", description: "Standard lab flasks. Minor staining but fully functional.", price: 15.0, original_price: 28.0, society: "Precious Plastic", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600" },
+        { title: "Precision Screwdriver Set", description: "24 piece magnetic driver set. Perfect for laptop or small tech repair.", price: 12.0, original_price: 22.0, society: "Battleburgh", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600" },
+        { title: "Aluminum Extrusions (2020)", description: "4x 500mm slots for CNC or 3D printer frames. T-slot standard.", price: 30.0, original_price: 45.0, society: "Hyped", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1558444029-019bb44818da?w=600" },
+        { title: "Digital Caliper (Steel)", description: "High precision measuring tool. Auto shut-off, zeroing works well.", price: 25.0, original_price: 45.0, society: "Civil Engineering Society", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1504917595217-d4dc5f9c4739?w=600" },
+        { title: "Portable Oscilloscope", description: "Single channel handheld scope. Great for debugging automotive sensors.", price: 60.0, original_price: 90.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1581092334651-ddf26d9a1930?w=600" },
+        { title: "Lipo Battery 3S 2.2Ah", description: "Used for drone project. Balanced cells, storage charged properly.", price: 15.0, original_price: 28.0, society: "Hyped", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1579546673203-d247f1c3026e?w=600" },
+        { title: "MG996R Robotics Servos", description: "High torque metal gear servos. 4 piece set for robot arm projects.", price: 25.0, original_price: 40.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=600" },
+        { title: "Lab Stand & Clamps", description: "Sturdy retort stand for titration or distillation setups. Like new.", price: 40.0, original_price: 65.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1581091870619-83bc93855173?w=600" },
+        { title: "M3 Screw Box (300pc)", description: "Organized box of hex screws, nuts, and spacers. Very handy.", price: 10.0, original_price: 18.0, society: "HumanEd", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1530124560677-bdaeaebef270?w=600" },
+        { title: "ESP32 DevKit x2", description: "Wifi and Bluetooth enabled microcontrollers. Brand new in pack.", price: 14.0, original_price: 22.0, society: "CompSoc", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=600" },
+        { title: "Heat Shrink Bundle", description: "Assorted sizes from 2mm to 10mm. 150 pieces for wiring protection.", price: 5.0, original_price: 12.0, society: "HumanEd", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1558444029-019bb44818da?w=600" },
+        { title: "Wire Stripping Tool", description: "Automatic stripper, saves so much time on harness builds.", price: 18.0, original_price: 30.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1516216628859-9bccecad13ef?w=600" },
+        { title: "Robotic Claw (Alu)", description: "Aluminum gripper for hobbyist robot arms. Strong and precise.", price: 45.0, original_price: 75.0, society: "Hyped", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=600" },
+        { title: "Gear Motor Set (4pc)", description: "DC motors with yellow wheels for mobile robot chassis.", price: 12.0, original_price: 25.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1531746790731-6c087fecd05a?w=600" },
+        { title: "3D Printer Resin (Grey)", description: "1kg bottle of standard UV resin. unopened. High resolution.", price: 25.0, original_price: 40.0, society: "Precious Plastic", type: "Materials", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1572914191102-404390757858?w=600" },
+        { title: "Desoldering Vacuum", description: "Professional grade solder sucker. Makes PCB repairs 10x easier.", price: 15.0, original_price: 25.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600" },
+        { title: "Bunsen Burner Kit", description: "With ceramic mat and tripod. Labs are clearing out old stock.", price: 20.0, original_price: 45.0, society: "Engineering 4 change (E4C)", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1530213786676-41ad9f7736f6?w=600" },
+        { title: "Buck Converter Module", description: "Step down voltage regulator. Efficient and easy to tune.", price: 6.0, original_price: 12.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "UK", image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600" },
+        { title: "Lab Bench Supply", description: "Steady 0-30V 5A power supply. A bit heavy but very reliable.", price: 80.0, original_price: 130.0, society: "HumanEd", type: "Tools", seller_email: "admin@engxchange.com", is_sold: true, country: "Malaysia", image_url: "https://images.unsplash.com/photo-1581092334651-ddf26d9a1930?w=600" }
+      ];
+
+      Promise.all(seedData.map(item => supabase.from('items').insert([item])))
+        .then(() => {
+          alert('Success! 30 dummy items have been seeded.');
+          window.location.href = '/';
+        })
+        .catch(err => alert('Seed failed: ' + err.message));
+    }
+  }, [session]);
 
   const loadData = useCallback(async () => {
     const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });

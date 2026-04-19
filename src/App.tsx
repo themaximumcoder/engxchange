@@ -35,6 +35,21 @@ const RequireAuth = ({ session, children }: { session: Session | null | undefine
   return <>{children}</>;
 };
 
+const mapItemFromDB = (row: Record<string, unknown>): MarketplaceItem => ({
+  id: row.id as string,
+  title: row.title as string,
+  description: row.description as string,
+  sellingPrice: row.price as number | undefined,
+  originalPrice: row.original_price as number | undefined,
+  sellerEmail: row.seller_email as string | undefined,
+  society: row.society as SocietyName,
+  type: row.type as EntryType,
+  imageUrls: Array.isArray(row.image_urls) ? row.image_urls : (row.image_url ? [row.image_url as string] : []),
+  imageUrl: row.image_url as string | undefined,
+  deliveryMethod: row.delivery_method as "delivery" | "meetup" | "both" | undefined,
+  meetupLocationName: row.meetup_location_name as string | undefined,
+  meetupLat: row.meetup_lat as number | undefined,
+  meetupLng: row.meetup_lng as number | undefined,
   sellerPhone: row.seller_phone as string | undefined,
   views: row.views as number | undefined,
   createdAt: row.created_at as string,

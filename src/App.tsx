@@ -11,7 +11,7 @@ import { Login } from './components/Login';
 import { Footer } from './components/Footer';
 import { Profile } from './components/Profile';
 import { AdminDashboard } from './components/AdminDashboard';
-import { TermsPage, ContactPage, WorkWithUsPage } from './components/InfoPages';
+import { TermsPage, ContactPage, WorkWithUsPage, PrivacyPage } from './components/InfoPages';
 import { MessagesInbox } from './components/MessagesInbox';
 import { ItemDetails } from './components/ItemDetails';
 import { NotificationsPage } from './components/NotificationsPage';
@@ -630,6 +630,7 @@ function MainApp() {
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/work" element={<WorkWithUsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
             </Routes>
           </ErrorBoundary>
         </main>

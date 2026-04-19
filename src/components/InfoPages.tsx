@@ -45,3 +45,26 @@ export function WorkWithUsPage() {
         </div>
     );
 }
+
+export function PrivacyPage() {
+    return (
+        <div className="container" style={{ padding: '4rem 2rem', maxWidth: '800px', background: '#fff', margin: '2rem auto', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <h1 style={{ marginBottom: '1.5rem', color: '#111827' }}>Privacy Policy</h1>
+            <p style={{ color: '#4b5563', lineHeight: 1.6, marginBottom: '1rem' }}>
+                At engXchange, we take student data privacy extremely seriously. This policy is primarily designed to inform you how we collect and use your data when using our marketplace and forum.
+            </p>
+
+            <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>1. Information Collection</h3>
+            <p style={{ color: '#4b5563', lineHeight: 1.6 }}>We collect your university email address (`.ac.uk`) for authentication purposes and any data you voluntarily provide when creating marketplace listings or forum posts.</p>
+
+            <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>2. Data Usage</h3>
+            <p style={{ color: '#4b5563', lineHeight: 1.6 }}>Your contact information is only shared with other users when you explicitly choose to engage in a trade or message them. We do not sell your data to third-party marketing companies.</p>
+
+            <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>3. Cookies & Advertising</h3>
+            <p style={{ color: '#4b5563', lineHeight: 1.6 }}>We use cookies to maintain your session and analyze site traffic. We may use third-party advertising services (like Google AdSense) which use cookies to serve ads based on your visits to this and other websites.</p>
+
+            <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>4. Your Rights</h3>
+            <p style={{ color: '#4b5563', lineHeight: 1.6 }}>You have the absolute right to request the deletion of your account and all associated data at any time. Please contact us via our support email to initiate this process.</p>
+        </div>
+    );
+}

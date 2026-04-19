@@ -16,6 +16,7 @@ export function Footer() {
                     <h4 style={{ marginBottom: '1rem', color: '#f3f4f6' }}>Quick Links</h4>
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         <li><Link to="/terms" style={{ color: '#9ca3af', textDecoration: 'none' }}>Conditions of Use</Link></li>
+                        <li><Link to="/privacy" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy Policy</Link></li>
                         <li><Link to="/contact" style={{ color: '#9ca3af', textDecoration: 'none' }}>Contact Us</Link></li>
                         <li><Link to="/work" style={{ color: '#9ca3af', textDecoration: 'none' }}>Work with Us</Link></li>
                     </ul>

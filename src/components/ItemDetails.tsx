@@ -5,7 +5,7 @@ import type { MarketplaceItem } from '../types';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 
-export function ItemDetails({ items, isLoggedIn, currentUserEmail }: { items: MarketplaceItem[], isLoggedIn: boolean, currentUserEmail: string }) {
+export function ItemDetails({ items, isLoggedIn, currentUserEmail, currencySymbol = '£' }: { items: MarketplaceItem[], isLoggedIn: boolean, currentUserEmail: string, currencySymbol?: string }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const item = items.find(i => i.id === id);
@@ -84,11 +84,11 @@ export function ItemDetails({ items, isLoggedIn, currentUserEmail }: { items: Ma
                     <div className="info-price-section">
                         {item.type !== 'Recruiting' && (
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem', flexWrap: 'wrap' }}>
-                                <span className="info-selling-price" style={{ color: '#16a34a' }}>£{sellingPrice.toFixed(2)}</span>
+                                <span className="info-selling-price" style={{ color: '#16a34a' }}>{currencySymbol}{sellingPrice.toFixed(2)}</span>
                                 {hasDiscount && (
                                     <>
                                         <span className="info-discount" style={{ color: '#ef4444', fontWeight: 'bold' }}>-{discountPercent}% OFF</span>
-                                        <span className="info-original-price">£{item.originalPrice?.toFixed(2)}</span>
+                                        <span className="info-original-price">{currencySymbol}{item.originalPrice?.toFixed(2)}</span>
                                     </>
                                 )}
                             </div>

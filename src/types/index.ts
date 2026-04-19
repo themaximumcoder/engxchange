@@ -43,6 +43,7 @@ export interface MarketplaceItem {
     sellerAvatar?: string;
     sellerName?: string;
     transactionMode?: 'sell' | 'trade' | 'both';
+    country?: string;
 }
 
 export interface ForumPost {
@@ -62,6 +63,7 @@ export interface ForumPost {
     points?: number;
     authorName?: string;
     authorAvatar?: string;
+    country?: string;
 }
 
 export interface Comment {
@@ -111,6 +113,7 @@ export interface Project {
     image_url?: string;
     created_at: string;
     points?: number;
+    country?: string;
 }
 
 export const SOCIETIES: SocietyName[] = [
@@ -239,6 +242,38 @@ export const UNIVERSITY_PRESETS: UniversityPreset[] = [
         name: 'Abertay University',
         locations: [
             { name: "Abertay Library", lat: 56.4630, lng: -2.9730 }
+        ]
+    },
+    // MALAYSIA PRESETS
+    {
+        name: 'University of Malaya (UM)',
+        locations: [
+            { name: "Dewan Tunku Canselor", lat: 3.1209, lng: 101.6538 },
+            { name: "Main Library", lat: 3.1215, lng: 101.6540 }
+        ]
+    },
+    {
+        name: 'Monash University Malaysia',
+        locations: [
+            { name: "Main Campus Buildining", lat: 3.0648, lng: 101.6010 }
+        ]
+    },
+    {
+        name: 'Sunway University',
+        locations: [
+            { name: "Sunway Campus", lat: 3.0673, lng: 101.6033 }
+        ]
+    },
+    {
+        name: 'Taylor\'s University',
+        locations: [
+            { name: "Lakeside Campus", lat: 3.0620, lng: 101.6160 }
+        ]
+    },
+    {
+        name: 'Asia Pacific University (APU)',
+        locations: [
+            { name: "Technology Park Malaysia", lat: 3.0560, lng: 101.6910 }
         ]
     }
 ];

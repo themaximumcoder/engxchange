@@ -13,9 +13,11 @@ interface NavbarProps {
     locationFilter?: string;
     onLocationFilterChange?: (loc: string) => void;
     availableLocations?: string[];
+    selectedCountry?: string;
+    onCountryChange?: (country: string) => void;
 }
 
-export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl, locationFilter, onLocationFilterChange, availableLocations }: NavbarProps) {
+export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl, locationFilter, onLocationFilterChange, availableLocations, selectedCountry, onCountryChange }: NavbarProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -99,6 +101,17 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                                 ))}
                             </datalist>
                         )}
+                        
+                        <div className="country-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f3f4f6', padding: '0.5rem', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                            <select 
+                                value={selectedCountry} 
+                                onChange={(e) => onCountryChange?.(e.target.value)}
+                                style={{ border: 'none', background: 'transparent', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}
+                            >
+                                <option value="UK">🇬🇧 UK</option>
+                                <option value="Malaysia">🇲🇾 Malaysia</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>

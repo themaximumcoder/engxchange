@@ -6,11 +6,12 @@ import './MarketplaceFeed.css';
 
 interface MarketplaceFeedProps {
     items: MarketplaceItem[];
-    isLoggedIn?: boolean;
+    isLoggedIn: boolean;
     onReport?: (id: string, type: string, reason: string) => void;
     onLikeItem: (id: string) => void;
     locationFilter?: string;
     savedItems: string[];
+    currencySymbol?: string;
 }
 
 const NEWS_SLIDES = [
@@ -48,7 +49,7 @@ function HeroCarousel() {
     );
 }
 
-export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems }: MarketplaceFeedProps) {
+export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeItem, locationFilter = 'all', savedItems, currencySymbol = '£' }: MarketplaceFeedProps) {
     const [sortOption, setSortOption] = useState('newest');
     const [recruitSortOption, setRecruitSortOption] = useState('newest');
     const [hideSold, setHideSold] = useState(false);
@@ -114,7 +115,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                     <div className="slider-container">
                         {hotItems.map((item) => (
                             <div key={item.id} className="slider-item">
-                                <ItemCard item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                                <ItemCard item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} currencySymbol={currencySymbol} />
                             </div>
                         ))}
                     </div>
@@ -159,9 +160,9 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                     </div>
                 ) : (
                     <>
-                        <div className="items-grid">
+                        <div className="grid">
                             {paginatedItems.map((item) => (
-                                <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
+                                <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} currencySymbol={currencySymbol} />
                             ))}
                         </div>
 
@@ -242,7 +243,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
 }
 
 
-function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems }: { item: MarketplaceItem; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[] }) {
+function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems, currencySymbol }: { item: MarketplaceItem; isLoggedIn: boolean; onReport?: (id: string, type: string, reason: string) => void; onLikeItem: (id: string) => void; savedItems: string[]; currencySymbol: string }) {
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
     const isRecruit = item.type === 'Recruiting';
@@ -346,7 +347,7 @@ function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems }: { item
                 {item.type !== 'Recruiting' && (
                     <div className="price-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '1.25rem' }}>
-                            £{sellingPrice.toFixed(2)}
+                            {currencySymbol}{sellingPrice.toFixed(2)}
                         </span>
                         {hasDiscount && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -354,7 +355,7 @@ function ItemCard({ item, isLoggedIn, onReport, onLikeItem, savedItems }: { item
                                     -{discountPercent}%
                                 </span>
                                 <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '0.8rem', fontWeight: 'normal' }}>
-                                    £{item.originalPrice?.toFixed(2)}
+                                    {currencySymbol}{item.originalPrice?.toFixed(2)}
                                 </span>
                             </div>
                         )}

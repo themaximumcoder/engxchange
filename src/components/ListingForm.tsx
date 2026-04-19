@@ -10,9 +10,10 @@ interface ListingFormProps {
     onSubmit: (item: Omit<MarketplaceItem, 'id' | 'createdAt'>) => void;
     onCancel: () => void;
     initialData?: Partial<MarketplaceItem>;
+    selectedCountry: string;
 }
 
-export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProps) {
+export function ListingForm({ onSubmit, onCancel, initialData, selectedCountry }: ListingFormProps) {
     const [title, setTitle] = useState(initialData?.title || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [type, setType] = useState<EntryType>(initialData?.type || 'Materials');
@@ -41,7 +42,7 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
 
         // Validation
         if (type !== 'Recruiting' && op > 0 && sp > op) {
-            setError(`Safety Block: You cannot list an item for more than its original price (£${op.toFixed(2)}). Please offer a fair price to your fellow engineers.`);
+            setError(`Safety Block: You cannot list an item for more than its original price (${selectedCountry === 'Malaysia' ? 'RM' : '£'}${op.toFixed(2)}). Please offer a fair price to your fellow engineers.`);
             return;
         }
 
@@ -88,7 +89,8 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
             meetupLng: meetupLng,
             views: initialData?.views || 0,
             isSold: initialData?.isSold || false,
-            transactionMode: transactionMode
+            transactionMode: transactionMode,
+            country: initialData?.country || selectedCountry
         });
         setUploading(false);
     };
@@ -154,11 +156,11 @@ export function ListingForm({ onSubmit, onCancel, initialData }: ListingFormProp
                     {type !== 'Recruiting' && (
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Original Price (£)</label>
+                                <label>Original Price ({selectedCountry === 'Malaysia' ? 'RM' : '£'})</label>
                                 <input type="number" min="0" step="0.01" required value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} />
                             </div>
                             <div className="form-group">
-                                <label>Selling Price (£)</label>
+                                <label>Selling Price ({selectedCountry === 'Malaysia' ? 'RM' : '£'})</label>
                                 <input type="number" min="0" step="0.01" required={transactionMode !== 'trade'} value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder={transactionMode === 'trade' ? 'Optional' : ''} />
                             </div>
                         </div>

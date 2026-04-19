@@ -35,26 +35,13 @@ const RequireAuth = ({ session, children }: { session: Session | null | undefine
   return <>{children}</>;
 };
 
-const mapItemFromDB = (row: Record<string, unknown>): MarketplaceItem => ({
-  id: row.id as string,
-  title: row.title as string,
-  description: row.description as string,
-  sellingPrice: row.price as number | undefined,
-  originalPrice: row.original_price as number | undefined,
-  sellerEmail: row.seller_email as string | undefined,
-  society: row.society as SocietyName,
-  type: row.type as EntryType,
-  imageUrls: Array.isArray(row.image_urls) ? row.image_urls : (row.image_url ? [row.image_url as string] : []),
-  imageUrl: row.image_url as string | undefined,
-  deliveryMethod: row.delivery_method as "delivery" | "meetup" | "both" | undefined,
-  meetupLocationName: row.meetup_location_name as string | undefined,
-  meetupLat: row.meetup_lat as number | undefined,
-  meetupLng: row.meetup_lng as number | undefined,
   sellerPhone: row.seller_phone as string | undefined,
   views: row.views as number | undefined,
   createdAt: row.created_at as string,
   isSold: row.is_sold as boolean | undefined,
-  transactionMode: row.transaction_mode as 'sell' | 'trade' | 'both' | undefined
+  transactionMode: row.transaction_mode as 'sell' | 'trade' | 'both' | undefined,
+  country: (row.country as string) || 'UK',
+  points: row.points as number | undefined
 });
 
 const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
@@ -73,7 +60,8 @@ const mapItemToDB = (item: Partial<MarketplaceItem>) => ({
   seller_email: item.sellerEmail || 'student@ed.ac.uk',
   seller_phone: item.sellerPhone,
   is_sold: item.isSold || false,
-  transaction_mode: item.transactionMode
+  transaction_mode: item.transactionMode,
+  country: item.country || 'UK'
 });
 
 const mapPostFromDB = (row: Record<string, unknown>): ForumPost => ({
@@ -121,6 +109,12 @@ function MainApp() {
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [globalProjects, setGlobalProjects] = useState<Project[]>([]);
   const [locationFilter, setLocationFilter] = useState('all');
+  const [selectedCountry, setSelectedCountry] = useState(localStorage.getItem('selectedCountry') || 'UK');
+  const [likedProjects, setLikedProjects] = useState<string[]>([]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedCountry', selectedCountry);
+  }, [selectedCountry]);
 
   const loadData = useCallback(async () => {
     const { data: iData } = await supabase.from('items').select('*').order('created_at', { ascending: false });
@@ -513,9 +507,16 @@ function MainApp() {
     const isSaved = savedItems.includes(itemId);
     new Audio('https://www.soundjay.com/buttons/sounds/button-4.mp3').play().catch(() => { });
 
+    const item = items.find(i => i.id === itemId);
+    const currentPoints = item?.points || 0;
+
     if (isSaved) {
       setSavedItems(prev => prev.filter(id => id !== itemId));
       await supabase.from('saved_items').delete().eq('user_email', session.user.email!).eq('item_id', itemId);
+      
+      const newPoints = Math.max(0, currentPoints - 1);
+      setItems(prev => prev.map(i => i.id === itemId ? { ...i, points: newPoints } : i));
+      await supabase.from('marketplace_items').update({ points: newPoints }).eq('id', itemId);
     } else {
       setSavedItems(prev => [...prev, itemId]);
       const { error } = await supabase.from('saved_items').insert([{ user_email: session.user.email!, item_id: itemId }]);
@@ -525,7 +526,6 @@ function MainApp() {
          return;
       }
       
-      const item = items.find(i => i.id === itemId);
       if (item && item.sellerEmail && item.sellerEmail !== session.user.email!) {
         supabase.from('notifications').insert([{
           user_email: item.sellerEmail,
@@ -535,31 +535,39 @@ function MainApp() {
       }
 
       // Sync count in DB
-      const newPoints = (item?.points || 0) + 1;
+      const newPoints = currentPoints + 1;
       setItems(prev => prev.map(i => i.id === itemId ? { ...i, points: newPoints } : i));
       await supabase.from('marketplace_items').update({ points: newPoints }).eq('id', itemId);
     }
-  }, [session, savedItems]);
+  }, [session, savedItems, items]);
 
   const handleLikeProject = useCallback(async (projectId: string) => {
     if (!session) { alert('Please login to like projects.'); return; }
     
-    // We use a simple toggle logic for projects
+    const isLiked = likedProjects.includes(projectId);
     const proj = globalProjects.find(p => p.id === projectId);
     if (!proj) return;
 
-    const newPoints = (proj.points || 0) + 1;
-    setGlobalProjects(prev => prev.map(p => p.id === projectId ? { ...p, points: newPoints } : p));
-    await supabase.from('projects').update({ points: newPoints }).eq('id', projectId);
-    
-    if (proj.user_email !== session.user.email!) {
-        supabase.from('notifications').insert([{
-            user_email: proj.user_email,
-            type: 'like',
-            message: `${session.user.email!.split('@')[0]} liked your project: "${proj.title}"`
-        }]).then();
+    if (isLiked) {
+        setLikedProjects(prev => prev.filter(id => id !== projectId));
+        const newPoints = Math.max(0, (proj.points || 0) - 1);
+        setGlobalProjects(prev => prev.map(p => p.id === projectId ? { ...p, points: newPoints } : p));
+        await supabase.from('projects').update({ points: newPoints }).eq('id', projectId);
+    } else {
+        setLikedProjects(prev => [...prev, projectId]);
+        const newPoints = (proj.points || 0) + 1;
+        setGlobalProjects(prev => prev.map(p => p.id === projectId ? { ...p, points: newPoints } : p));
+        await supabase.from('projects').update({ points: newPoints }).eq('id', projectId);
+        
+        if (proj.user_email !== session.user.email!) {
+            supabase.from('notifications').insert([{
+                user_email: proj.user_email,
+                type: 'like',
+                message: `${session.user.email!.split('@')[0]} liked your project: "${proj.title}"`
+            }]).then();
+        }
     }
-  }, [session, globalProjects]);
+  }, [session, globalProjects, likedProjects]);
 
   const handleMarkNotificationRead = async (id: string) => {
     const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
@@ -567,17 +575,21 @@ function MainApp() {
   };
 
   const filteredItems = items.filter(i =>
-  (i.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    i.description?.toLowerCase().includes(searchQuery.toLowerCase()))
+    i.country === selectedCountry &&
+    (i.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     i.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   const filteredPosts = posts.filter(p =>
-  (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.content?.toLowerCase().includes(searchQuery.toLowerCase()))
+    (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     p.content?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   const filteredProjects = globalProjects.filter(p =>
-  (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description?.toLowerCase().includes(searchQuery.toLowerCase()))
+    (p.country === undefined || p.country === selectedCountry) &&
+    (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     p.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const currencySymbol = selectedCountry === 'Malaysia' ? 'RM' : '£';
 
 
   if (!GOOGLE_MAPS_API_KEY) {
@@ -623,25 +635,23 @@ function MainApp() {
           <meta name="description" content="The premier decentralized marketplace and social forum for engineering students." />
         </Helmet>
 
-        <Navbar
-          isLoggedIn={!!session}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          locationFilter={locationFilter}
-          onLocationFilterChange={setLocationFilter}
-          availableLocations={UNIVERSITY_PRESETS.filter(u => items.some(item => item.origin === u.name)).map(u => u.name)}
-          onLogoutClick={() => { supabase.auth.signOut(); navigate('/'); }}
-          suggestions={items.map(i => i.title)}
+        <Navbar 
+          isLoggedIn={!!session} 
+          searchQuery={searchQuery} 
+          onSearchChange={setSearchQuery} 
+          onLogoutClick={handleLogout}
           notifications={notifications}
           avatarUrl={currentUserAvatar}
+          selectedCountry={selectedCountry}
+          onCountryChange={setSelectedCountry}
         />
 
         <main className="main-content container">
           <ErrorBoundary>
             <Routes>
-              <Route path="/" element={<MarketplaceFeed items={filteredItems} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} />} />
-              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} currentUserEmail={currentUserEmail} />} />
-              <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} /></RequireAuth>} />
+              <Route path="/" element={<MarketplaceFeed items={filteredItems} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} currencySymbol={currencySymbol} />} />
+              <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} currentUserEmail={currentUserEmail} currencySymbol={currencySymbol} />} />
+              <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} selectedCountry={selectedCountry} /></RequireAuth>} />
               <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />

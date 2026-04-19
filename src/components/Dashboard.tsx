@@ -11,9 +11,10 @@ interface DashboardProps {
     onMarkSold: (id: string, isSold: boolean) => void;
     onDeleteListing: (id: string) => void;
     onUpdateListing: (id: string, updates: Partial<MarketplaceItem>) => void;
+    selectedCountry: string;
 }
 
-export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing }: DashboardProps) {
+export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing, onUpdateListing, selectedCountry }: DashboardProps) {
     const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
 
     const sellerItems = items.filter(i =>
@@ -71,6 +72,7 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                     initialData={editingItem}
                     onSubmit={handleEditSubmit}
                     onCancel={() => setEditingItem(null)}
+                    selectedCountry={selectedCountry}
                 />
             </div>
         );

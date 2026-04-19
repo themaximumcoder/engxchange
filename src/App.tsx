@@ -127,6 +127,11 @@ function MainApp() {
   const [selectedCountry, setSelectedCountry] = useState(localStorage.getItem('selectedCountry') || 'UK');
   const [likedProjects, setLikedProjects] = useState<string[]>([]);
 
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  }, [navigate]);
+
   useEffect(() => {
     localStorage.setItem('selectedCountry', selectedCountry);
   }, [selectedCountry]);
@@ -659,6 +664,10 @@ function MainApp() {
           avatarUrl={currentUserAvatar}
           selectedCountry={selectedCountry}
           onCountryChange={setSelectedCountry}
+          locationFilter={locationFilter}
+          onLocationFilterChange={setLocationFilter}
+          availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
+          suggestions={items.map(i => i.title)}
         />
 
         <main className="main-content container">
@@ -667,7 +676,7 @@ function MainApp() {
               <Route path="/" element={<MarketplaceFeed items={filteredItems} isLoggedIn={!!session} onReport={handleReport} onLikeItem={handleLikeItem} locationFilter={locationFilter} savedItems={savedItems} currencySymbol={currencySymbol} />} />
               <Route path="/item/:id" element={<ItemDetails items={items} isLoggedIn={!!session} currentUserEmail={currentUserEmail} currencySymbol={currencySymbol} />} />
               <Route path="/list" element={<RequireAuth session={session}><ListingForm onSubmit={handleAddListing} onCancel={() => navigate('/')} initialData={{ sellerEmail: currentUserEmail }} selectedCountry={selectedCountry} /></RequireAuth>} />
-              <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /></RequireAuth>} />
+              <Route path="/dashboard" element={<RequireAuth session={session}><Dashboard items={items} currentUserEmail={currentUserEmail} onMarkSold={handleToggleSold} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} selectedCountry={selectedCountry} /></RequireAuth>} />
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
               <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} onLikeProject={handleLikeProject} />} />

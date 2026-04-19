@@ -231,11 +231,11 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                         </div>
                     </div>
 
-                    <div className="items-grid">
-                        {sortRecruitItems(recruitingItems).map((item) => (
-                            <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} />
-                        ))}
-                    </div>
+                        <div className="items-grid">
+                            {sortRecruitItems(recruitingItems).map((item) => (
+                                <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} currencySymbol={currencySymbol} />
+                            ))}
+                        </div>
                 </div>
             )}
         </div>

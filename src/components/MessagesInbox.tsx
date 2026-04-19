@@ -82,7 +82,7 @@ export function MessagesInbox({
     return (
         <div style={{ 
             display: 'flex', 
-            minHeight: isMobile ? 'calc(100vh - 250px)' : '750px', 
+            minHeight: isMobile ? 'calc(100vh - 250px)' : '500px', 
             background: '#fff', 
             borderRadius: isMobile ? '0' : '16px', 
             border: isMobile ? 'none' : '1px solid #e5e7eb', 
@@ -166,9 +166,9 @@ export function MessagesInbox({
                                         </div>
                                     </div>
                                 </div>
-                                {targetItemId && (
+                                {selectedTargetItemId && (
                                     <div style={{ background: '#eff6ff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.7rem', color: '#1d4ed8', fontWeight: 700, border: '1px solid #dbeafe' }}>
-                                        Target: {marketplaceItems.find(i => i.id === targetItemId)?.title.substring(0, 15)}...
+                                        Target: {marketplaceItems.find(i => i.id === selectedTargetItemId)?.title.substring(0, 15)}...
                                     </div>
                                 )}
                             </div>
@@ -293,7 +293,7 @@ export function MessagesInbox({
                             {/* INPUT FORM - LOCKED TO BOTTOM */}
                             <div style={{ padding: '1.25rem', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, position: 'relative' }}>
                                 {showTradePicker && (
-                                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', right: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 -4px 12px rgba(0,0,0,0.1)', marginBottom: '8px', maxHeight: '420px', overflowY: 'auto', zIndex: 10 }}>
+                                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', right: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 -4px 12px rgba(0,0,0,0.1)', marginBottom: '8px', maxHeight: '300px', overflowY: 'auto', zIndex: 10 }}>
                                         <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', position: 'sticky', top: 0, zIndex: 2 }}>
                                             <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>Create Trade Proposal</span>
                                             <button onClick={() => setShowTradePicker(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>

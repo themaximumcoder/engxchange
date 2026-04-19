@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ForumPost } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
-export function ForumPostForm({ onSubmit, onCancel, currentUserEmail }: { onSubmit: (data: Omit<ForumPost, 'id' | 'createdAt' | 'upvotes'>) => void, onCancel: () => void, currentUserEmail: string }) {
+export function ForumPostForm({ onSubmit, onCancel, currentUserEmail, selectedCountry }: { onSubmit: (data: Omit<ForumPost, 'id' | 'createdAt' | 'upvotes'>) => void, onCancel: () => void, currentUserEmail: string, selectedCountry: string }) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -51,7 +51,8 @@ export function ForumPostForm({ onSubmit, onCancel, currentUserEmail }: { onSubm
             imageUrl: finalImageUrl,
             stlFileName: finalStlName,
             stlFileUrl: finalStlUrl,
-            tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : undefined
+            tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : undefined,
+            country: selectedCountry
         });
         setUploading(false);
     }

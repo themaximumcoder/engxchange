@@ -689,7 +689,7 @@ function MainApp() {
           onCountryChange={setSelectedCountry}
           locationFilter={locationFilter}
           onLocationFilterChange={setLocationFilter}
-          availableLocations={UNIVERSITY_PRESETS.map(u => u.name)}
+          availableLocations={UNIVERSITY_PRESETS.filter(u => u.country === (selectedCountry === 'Malaysia' ? 'Malaysia' : 'UK')).map(u => u.name)}
           suggestions={items.map(i => i.title)}
         />
 
@@ -703,7 +703,7 @@ function MainApp() {
               <Route path="/inbox" element={<RequireAuth session={session}><MessagesInbox messages={messages} currentUserEmail={currentUserEmail} onSendMessage={handleSendMessage} onMarkAsRead={handleMarkMessagesAsRead} marketplaceItems={items} /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth session={session}><NotificationsPage notifications={notifications} onMarkRead={handleMarkNotificationRead} /></RequireAuth>} />
               <Route path="/forum" element={<ForumFeed posts={filteredPosts} projects={filteredProjects} comments={comments} userVotes={userVotes} onCreatePost={() => { if (!session) { alert('Please log in.'); navigate('/login'); } else { navigate('/create-post'); } }} onVote={handleVote} onAddComment={handleAddComment} onFriendRequest={handleFriendRequest} currentUserEmail={session?.user?.email || ''} onReport={handleReport} onLikeProject={handleLikeProject} />} />
-              <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
+              <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} selectedCountry={selectedCountry} /></RequireAuth>} />
               <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
               <Route path="/profile" element={<RequireAuth session={session}><Profile session={session ?? null} onProfileUpdate={loadData} /></RequireAuth>} />

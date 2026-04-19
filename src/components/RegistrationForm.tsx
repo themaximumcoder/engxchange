@@ -17,7 +17,7 @@ export function RegistrationForm({ onComplete }: { onComplete: () => void }) {
         const filtered = UNIVERSITY_PRESETS
             .filter(u => u.country === selectedCountry)
             .map(u => ({ name: u.name }))
-            .sort((a, b) => a.name.localeCompare(b));
+            .sort((a, b) => a.name.localeCompare(b.name));
         
         setUniversities(filtered);
         if (filtered.length > 0) {

@@ -1,4 +1,4 @@
-import { UniversityPreset } from '../types';
+import type { UniversityPreset } from '../types';
 
 export const UNIVERSITY_PRESETS: UniversityPreset[] = [
     // --- UNITED KINGDOM ---

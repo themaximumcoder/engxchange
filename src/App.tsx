@@ -626,7 +626,7 @@ function MainApp() {
               <Route path="/create-post" element={<RequireAuth session={session}><ForumPostForm currentUserEmail={currentUserEmail} onSubmit={handleAddPost} onCancel={() => navigate('/forum')} /></RequireAuth>} />
               <Route path="/register" element={<RegistrationForm onComplete={() => navigate('/')} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => navigate('/')} />} />
-              <Route path="/profile" element={<RequireAuth session={session}><Profile session={session} onProfileUpdate={loadData} /></RequireAuth>} />
+              <Route path="/profile" element={<RequireAuth session={session}><Profile session={session ?? null} onProfileUpdate={loadData} /></RequireAuth>} />
               <Route path="/admin" element={<RequireAuth session={session}>{session?.user?.email === 'engxedinburgh@gmail.com' ? <AdminDashboard items={items} /> : <div style={{ padding: '4rem', textAlign: 'center', color: '#ef4444' }}><h2>Access Denied</h2></div>}</RequireAuth>} />
               <Route path="/update-password" element={<UpdatePassword />} />
               <Route path="/terms" element={<TermsPage />} />

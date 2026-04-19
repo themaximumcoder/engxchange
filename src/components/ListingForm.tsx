@@ -203,7 +203,13 @@ export function ListingForm({ onSubmit, onCancel, initialData, selectedCountry }
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '1rem' }}
                             >
                                 <option value="">-- Choose University --</option>
-                                {UNIVERSITY_PRESETS.map(u => <option key={u.name} value={u.name}>{u.name}</option>)}
+                                {UNIVERSITY_PRESETS
+                                    .filter(u => u.country === (selectedCountry === 'Malaysia' ? 'Malaysia' : 'UK'))
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map(u => (
+                                        <option key={u.name} value={u.name}>{u.name}</option>
+                                    ))
+                                }
                             </select>
 
                             {selectedUni && (

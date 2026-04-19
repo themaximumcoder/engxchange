@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 import { getSmartPlaceholder } from '../lib/helpers';
 import type { Message, MarketplaceItem } from '../types';
 

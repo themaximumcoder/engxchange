@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSmartPlaceholder } from '../lib/helpers';
 import type { MarketplaceItem } from '../types';
+import { supabase } from '../lib/supabaseClient';
 import { LocationPicker } from './LocationPicker';
 import './ItemDetails.css';
 

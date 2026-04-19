@@ -81,7 +81,7 @@ export function Profile({ session, onProfileUpdate }: { session: Session | null,
 
         const loadApplications = async () => {
             if (!session?.user?.email) return;
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('applications')
                 .select('*, items(title, society)')
                 .eq('applicant_email', session.user.email)

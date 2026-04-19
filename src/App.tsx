@@ -400,7 +400,10 @@ function MainApp() {
       type: 'friend_request',
       message: `${session.user.email} sent you a friend request.`
     }]);
-    if (!error) alert(`Friend request sent to ${targetEmail}!`);
+    if (!error) {
+      alert(`Friend request sent to ${targetEmail}!`);
+      sendEmailNotification(targetEmail, session.user.email!, "Sent you a friend request on engXchange.");
+    }
   };
 
   const handleAddComment = async (postId: string, content: string) => {
@@ -414,6 +417,7 @@ function MainApp() {
       const postAuthor = posts.find(p => p.id === postId)?.authorEmail;
       if (postAuthor && postAuthor !== session.user.email) {
         supabase.from('notifications').insert([{ user_email: postAuthor, type: 'comment', message: `${session.user.email} commented on your post` }]).then();
+        sendEmailNotification(postAuthor, session.user.email!, "Commented on your post: " + content);
       }
     }
   };

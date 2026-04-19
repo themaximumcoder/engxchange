@@ -110,6 +110,7 @@ export interface Project {
     description: string;
     image_url?: string;
     created_at: string;
+    points?: number;
 }
 
 export const SOCIETIES: SocietyName[] = [

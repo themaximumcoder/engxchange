@@ -160,7 +160,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                     </div>
                 ) : (
                     <>
-                        <div className="grid">
+                        <div className="items-grid">
                             {paginatedItems.map((item) => (
                                 <ItemCard key={item.id} item={item} isLoggedIn={isLoggedIn} onReport={onReport} onLikeItem={onLikeItem} savedItems={savedItems} currencySymbol={currencySymbol} />
                             ))}

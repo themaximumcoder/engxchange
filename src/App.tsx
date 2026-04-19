@@ -124,20 +124,13 @@ function MainApp() {
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [globalProjects, setGlobalProjects] = useState<Project[]>([]);
   const [locationFilter, setLocationFilter] = useState('all');
-  const [selectedCountry, setSelectedCountry] = useState(localStorage.getItem('selectedCountry') || '');
-  const [showRegionPrompt, setShowRegionPrompt] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(localStorage.getItem('selectedCountry') || 'UK');
   const [likedProjects, setLikedProjects] = useState<string[]>([]);
 
   const handleLogout = useCallback(async () => {
     await supabase.auth.signOut();
     navigate('/');
   }, [navigate]);
-
-  useEffect(() => {
-    if (selectedCountry) {
-      localStorage.setItem('selectedCountry', selectedCountry);
-    }
-  }, [selectedCountry]);
 
   useEffect(() => {
     const stored = localStorage.getItem('selectedCountry');
@@ -147,14 +140,13 @@ function MainApp() {
         .then(data => {
           if (data.country_code === 'MY') {
             setSelectedCountry('Malaysia');
-          } else if (data.country_code === 'GB') {
-            setSelectedCountry('UK');
           } else {
-            setShowRegionPrompt(true);
+            // Default to UK for United Kingdom or any other country
+            setSelectedCountry('UK');
           }
         })
         .catch(() => {
-          setShowRegionPrompt(true);
+          setSelectedCountry('UK');
         });
     }
   }, []);
@@ -689,7 +681,7 @@ function MainApp() {
           onCountryChange={setSelectedCountry}
           locationFilter={locationFilter}
           onLocationFilterChange={setLocationFilter}
-          availableLocations={UNIVERSITY_PRESETS.filter(u => u.country === (selectedCountry === 'Malaysia' ? 'Malaysia' : 'UK')).map(u => u.name)}
+          availableLocations={UNIVERSITY_PRESETS.filter(u => u.country === (selectedCountry || 'UK')).map(u => u.name)}
           suggestions={items.map(i => i.title)}
         />
 
@@ -727,74 +719,6 @@ function MainApp() {
             <Link to="/inbox" className="mobile-nav-link">📬</Link>
             <Link to="/profile" className="mobile-nav-link">👤</Link>
           </nav>
-        )}
-        {showRegionPrompt && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(15, 23, 42, 0.8)',
-            backdropFilter: 'blur(12px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem'
-          }}>
-            <div style={{
-              background: '#fff',
-              padding: '2.5rem',
-              borderRadius: '24px',
-              maxWidth: '450px',
-              width: '100%',
-              textAlign: 'center',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-            }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🌍</div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem' }}>Welcome to engXchange</h2>
-              <p style={{ color: '#64748b', marginBottom: '2rem', lineHeight: 1.6 }}>
-                We couldn't determine your location automatically. Please select your region to see local marketplace listings and community events.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <button 
-                  onClick={() => { setSelectedCountry('UK'); setShowRegionPrompt(false); }}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '16px',
-                    border: '2px solid #e2e8f0',
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontWeight: 700
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.background = '#eff6ff'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#f8fafc'; }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🇬🇧</div>
-                  United Kingdom
-                </button>
-                <button 
-                  onClick={() => { setSelectedCountry('Malaysia'); setShowRegionPrompt(false); }}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '16px',
-                    border: '2px solid #e2e8f0',
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontWeight: 700
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = '#2563eb'; e.currentTarget.style.background = '#eff6ff'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#f8fafc'; }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🇲🇾</div>
-                  Malaysia
-                </button>
-              </div>
-            </div>
-          </div>
         )}
         <Analytics />
       </div>

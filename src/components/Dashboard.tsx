@@ -235,7 +235,7 @@ export function Dashboard({ items, currentUserEmail, onMarkSold, onDeleteListing
                         
                         <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
                             <h3 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '1rem' }}>Trust Metrics</h3>
-                            <div style={{ spacing: '0.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
                                     <span style={{ color: '#64748b' }}>Response Rate</span>
                                     <span style={{ fontWeight: 700, color: '#10b981' }}>98%</span>

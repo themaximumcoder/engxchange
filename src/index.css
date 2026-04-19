@@ -41,7 +41,7 @@ button {
 /* Utilities */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1020px; /* Reduced from 1200px by 15% */
   margin: 0 auto;
   padding: 0 1rem;
 }

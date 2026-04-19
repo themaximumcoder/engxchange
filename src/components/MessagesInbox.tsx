@@ -22,7 +22,8 @@ export function MessagesInbox({
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [showTradePicker, setShowTradePicker] = useState(false);
     const [cashOffer, setCashOffer] = useState('');
-    const [targetItemId, setTargetItemId] = useState<string | null>(null);
+    const [selectedTargetItemId, setSelectedTargetItemId] = useState<string | null>(null);
+    const [selectedProposerItemId, setSelectedProposerItemId] = useState<string | null>(null);
     const location = useLocation() as { state: { newContact?: string, draftMessage?: string, itemId?: string } | null };
 
     useEffect(() => {
@@ -36,7 +37,7 @@ export function MessagesInbox({
             const { newContact, draftMessage, itemId } = location.state;
             setTimeout(() => {
                 setSelectedContact(newContact);
-                if (itemId) setTargetItemId(itemId);
+                if (itemId) setSelectedTargetItemId(itemId);
                 if (draftMessage) {
                     setDraft(draftMessage);
                 }
@@ -292,13 +293,84 @@ export function MessagesInbox({
                             {/* INPUT FORM - LOCKED TO BOTTOM */}
                             <div style={{ padding: '1.25rem', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, position: 'relative' }}>
                                 {showTradePicker && (
-                                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', right: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 -4px 12px rgba(0,0,0,0.1)', marginBottom: '8px', maxHeight: '300px', overflowY: 'auto', zIndex: 10 }}>
-                                        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
-                                            <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>Propose Trade</span>
+                                    <div style={{ position: 'absolute', bottom: '100%', left: '1.25rem', right: '1.25rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 -4px 12px rgba(0,0,0,0.1)', marginBottom: '8px', maxHeight: '420px', overflowY: 'auto', zIndex: 10 }}>
+                                        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', position: 'sticky', top: 0, zIndex: 2 }}>
+                                            <span style={{ fontWeight: 800, fontSize: '0.85rem' }}>Create Trade Proposal</span>
                                             <button onClick={() => setShowTradePicker(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
                                         </div>
-                                        <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9' }}>
-                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', marginBottom: '8px' }}>ADD CASH OFFER (OPTIONAL)</label>
+
+                                        {/* SECTION 1: THEIR ITEM */}
+                                        <div style={{ padding: '8px 1rem', fontSize: '0.7rem', fontWeight: 800, color: '#2563eb', background: '#eff6ff', borderBottom: '1px solid #dbeafe' }}>
+                                            1. SELECT THEIR ITEM
+                                        </div>
+                                        <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                                            {marketplaceItems.filter(i => i.sellerEmail?.toLowerCase() === selectedContact.toLowerCase()).length === 0 ? (
+                                                <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748b' }}>User has no active listings</div>
+                                            ) : (
+                                                marketplaceItems
+                                                    .filter(i => i.sellerEmail?.toLowerCase() === selectedContact.toLowerCase())
+                                                    .map(item => (
+                                                        <div 
+                                                            key={item.id} 
+                                                            onClick={() => setSelectedTargetItemId(item.id)}
+                                                            style={{ 
+                                                                padding: '8px 15px', 
+                                                                display: 'flex', 
+                                                                gap: '12px', 
+                                                                alignItems: 'center', 
+                                                                cursor: 'pointer', 
+                                                                borderBottom: '1px solid #f1f5f9',
+                                                                background: selectedTargetItemId === item.id ? '#f1f5f9' : 'transparent',
+                                                                borderLeft: selectedTargetItemId === item.id ? '4px solid #2563eb' : '4px solid transparent'
+                                                            }}
+                                                        >
+                                                            <img src={item.imageUrl || getSmartPlaceholder(item.title, item.society)} style={{ width: '30px', height: '30px', borderRadius: '4px', objectFit: 'cover' }} />
+                                                            <div style={{ minWidth: 0 }}>
+                                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                                                            </div>
+                                                            {selectedTargetItemId === item.id && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#2563eb', fontWeight: 800 }}>SELECTED</span>}
+                                                        </div>
+                                                    ))
+                                            )}
+                                        </div>
+
+                                        {/* SECTION 2: YOUR ITEM */}
+                                        <div style={{ padding: '8px 1rem', fontSize: '0.7rem', fontWeight: 800, color: '#059669', background: '#ecfdf5', borderBottom: '1px solid #d1fae5' }}>
+                                            2. SELECT YOUR ITEM TO OFFER
+                                        </div>
+                                        <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                                            {marketplaceItems.filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase()).length === 0 ? (
+                                                <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748b' }}>You have no active listings</div>
+                                            ) : (
+                                                marketplaceItems
+                                                    .filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase())
+                                                    .map(item => (
+                                                        <div 
+                                                            key={item.id} 
+                                                            onClick={() => setSelectedProposerItemId(item.id)}
+                                                            style={{ 
+                                                                padding: '8px 15px', 
+                                                                display: 'flex', 
+                                                                gap: '12px', 
+                                                                alignItems: 'center', 
+                                                                cursor: 'pointer', 
+                                                                borderBottom: '1px solid #f1f5f9',
+                                                                background: selectedProposerItemId === item.id ? '#f1f5f9' : 'transparent',
+                                                                borderLeft: selectedProposerItemId === item.id ? '4px solid #059669' : '4px solid transparent'
+                                                            }}
+                                                        >
+                                                            <img src={item.imageUrl || getSmartPlaceholder(item.title, item.society)} style={{ width: '30px', height: '30px', borderRadius: '4px', objectFit: 'cover' }} />
+                                                            <div style={{ minWidth: 0 }}>
+                                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                                                            </div>
+                                                            {selectedProposerItemId === item.id && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#059669', fontWeight: 800 }}>SELECTED</span>}
+                                                        </div>
+                                                    ))
+                                            )}
+                                        </div>
+
+                                        <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                                            <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', marginBottom: '8px' }}>3. ADD CASH TOP-UP (OPTIONAL)</label>
                                             <div style={{ position: 'relative' }}>
                                                 <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800 }}>£</span>
                                                 <input 
@@ -306,42 +378,40 @@ export function MessagesInbox({
                                                     placeholder="0.00" 
                                                     value={cashOffer}
                                                     onChange={e => setCashOffer(e.target.value)}
-                                                    style={{ width: '100%', padding: '10px 10px 10px 25px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }}
+                                                    style={{ width: '100%', padding: '8px 10px 8px 25px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '0.9rem' }}
                                                 />
                                             </div>
                                         </div>
-                                        <div style={{ padding: '8px 1rem', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', background: '#f8fafc' }}>SELECT YOUR ITEM</div>
-                                        {marketplaceItems.filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase()).length === 0 ? (
-                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>No active listings to trade</div>
-                                        ) : (
-                                            marketplaceItems
-                                                .filter(i => i.sellerEmail?.toLowerCase() === currentUserEmail.toLowerCase())
-                                                .map(item => (
-                                                    <div 
-                                                        key={item.id} 
-                                                        onClick={() => {
-                                                            const tradeJson = JSON.stringify({
-                                                                proposerItemId: item.id,
-                                                                targetItemId: targetItemId,
-                                                                cashOffer: parseFloat(cashOffer) || 0,
-                                                                status: 'pending'
-                                                            });
-                                                            onSendMessage(selectedContact, `[TRADE_V1]${tradeJson}`);
-                                                            setShowTradePicker(false);
-                                                            setCashOffer('');
-                                                        }}
-                                                        style={{ padding: '10px 15px', display: 'flex', gap: '12px', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
-                                                        onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
-                                                        onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-                                                    >
-                                                        <img src={item.imageUrl || getSmartPlaceholder(item.title, item.society)} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
-                                                        <div style={{ minWidth: 0 }}>
-                                                            <div style={{ fontSize: '0.85rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
-                                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>£{item.sellingPrice || item.originalPrice || 0}</div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                        )}
+
+                                        <div style={{ padding: '1rem', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                                            <button 
+                                                disabled={!selectedTargetItemId || !selectedProposerItemId}
+                                                onClick={() => {
+                                                    const tradeJson = JSON.stringify({
+                                                        proposerItemId: selectedProposerItemId,
+                                                        targetItemId: selectedTargetItemId,
+                                                        cashOffer: parseFloat(cashOffer) || 0,
+                                                        status: 'pending'
+                                                    });
+                                                    onSendMessage(selectedContact, `[TRADE_V1]${tradeJson}`);
+                                                    setShowTradePicker(false);
+                                                    setCashOffer('');
+                                                    setSelectedProposerItemId(null);
+                                                }}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    padding: '12px', 
+                                                    borderRadius: '8px', 
+                                                    background: (!selectedTargetItemId || !selectedProposerItemId) ? '#cbd5e1' : '#2563eb',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    fontWeight: 800,
+                                                    cursor: (!selectedTargetItemId || !selectedProposerItemId) ? 'not-allowed' : 'pointer'
+                                                }}
+                                            >
+                                                Send Trade Proposal
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                                 <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>

@@ -729,6 +729,7 @@ function MainApp() {
           onLocationFilterChange={setLocationFilter}
           availableLocations={UNIVERSITY_PRESETS.filter(u => u.country === (selectedCountry || 'UK')).map(u => u.name)}
           suggestions={items.map(i => i.title)}
+          currentUserEmail={currentUserEmail}
         />
 
         <main className="main-content container">

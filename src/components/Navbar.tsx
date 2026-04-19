@@ -15,9 +15,10 @@ interface NavbarProps {
     availableLocations?: string[];
     selectedCountry?: string;
     onCountryChange?: (country: string) => void;
+    currentUserEmail?: string;
 }
 
-export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl, locationFilter, onLocationFilterChange, availableLocations, selectedCountry, onCountryChange }: NavbarProps) {
+export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick, suggestions, notifications = [], avatarUrl, locationFilter, onLocationFilterChange, availableLocations, selectedCountry, onCountryChange, currentUserEmail }: NavbarProps) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -71,6 +72,9 @@ export function Navbar({ isLoggedIn, searchQuery, onSearchChange, onLogoutClick,
                             <>
                                 <Link to="/inbox" className={`nav-link-secondary highlight-messages ${location.pathname === '/inbox' ? 'active' : ''}`}>Messages</Link>
                                 <Link to="/dashboard" className={`nav-link-secondary ${location.pathname === '/dashboard' ? 'active' : ''}`}>Dashboard</Link>
+                                {(currentUserEmail === 'engxedinburgh@gmail.com' || currentUserEmail === 's2788457@ed.ac.uk' || currentUserEmail === 'admin@engxchange.com') && (
+                                    <Link to="/admin" className={`nav-link-secondary ${location.pathname === '/admin' ? 'active' : ''}`} style={{ color: '#dc2626', fontWeight: 900 }}>Admin 🛡️</Link>
+                                )}
                             </>
                         )}
                     </div>

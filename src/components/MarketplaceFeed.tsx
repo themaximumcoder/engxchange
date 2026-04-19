@@ -127,7 +127,7 @@ export function MarketplaceFeed({ items, isLoggedIn = false, onReport, onLikeIte
                 <div className="feed-header" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                         <h2>Latest Marketplace</h2>
-                        <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Showing {displayItems.length} items</span>
+                        <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Showing {allFilteredItems.length} items</span>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', width: '100%', background: '#fff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
